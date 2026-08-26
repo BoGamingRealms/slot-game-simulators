@@ -33,6 +33,7 @@ public class GridCell
     public int LifeRemaining { get; set; } // 3, 2, 1, or 0
     public bool WonThisSpin { get; set; }
     public bool JustLanded { get; set; }
+    public int TargetAffectedCount { get; set; }
 }
 
 public class CashVortexSlotEngine : ISlotEngine
@@ -307,6 +308,7 @@ public class CashVortexSlotEngine : ISlotEngine
         // 1. Process Cash Strikes first (distribute cash boost)
         foreach (var cell in newlyLanded)
         {
+            int affected = 0;
             if (cell.Type == SymbolType.MiniStrike)
             {
                 var targets = GetOrthogonalNeighbors(cell.Row, cell.Col);
@@ -315,6 +317,7 @@ public class CashVortexSlotEngine : ISlotEngine
                     if (IsValuableTarget(t.Type))
                     {
                         t.CashValue += cell.CashValue;
+                        affected++;
                     }
                 }
             }
@@ -326,6 +329,7 @@ public class CashVortexSlotEngine : ISlotEngine
                     if (t != cell && IsValuableTarget(t.Type))
                     {
                         t.CashValue += cell.CashValue;
+                        affected++;
                     }
                 }
             }
@@ -339,15 +343,22 @@ public class CashVortexSlotEngine : ISlotEngine
                         if (t != cell && IsValuableTarget(t.Type))
                         {
                             t.CashValue += cell.CashValue;
+                            affected++;
                         }
                     }
                 }
+            }
+
+            if (cell.Type == SymbolType.MiniStrike || cell.Type == SymbolType.MegaStrike || cell.Type == SymbolType.UltraStrike)
+            {
+                cell.TargetAffectedCount = affected;
             }
         }
 
         // 2. Process Cash Vortexes second (gather cash values)
         foreach (var cell in newlyLanded)
         {
+            int affected = 0;
             if (cell.Type == SymbolType.MiniVortex)
             {
                 var targets = GetOrthogonalNeighbors(cell.Row, cell.Col);
@@ -357,6 +368,7 @@ public class CashVortexSlotEngine : ISlotEngine
                     if (IsValuableTarget(t.Type))
                     {
                         sum += t.CashValue;
+                        if (t.CashValue > 0) affected++;
                     }
                 }
                 cell.CashValue = sum;
@@ -370,6 +382,7 @@ public class CashVortexSlotEngine : ISlotEngine
                     if (t != cell && IsValuableTarget(t.Type))
                     {
                         sum += t.CashValue;
+                        if (t.CashValue > 0) affected++;
                     }
                 }
                 cell.CashValue = sum;
@@ -385,10 +398,16 @@ public class CashVortexSlotEngine : ISlotEngine
                         if (t != cell && IsValuableTarget(t.Type))
                         {
                             sum += t.CashValue;
+                            if (t.CashValue > 0) affected++;
                         }
                     }
                 }
                 cell.CashValue = sum;
+            }
+
+            if (cell.Type == SymbolType.MiniVortex || cell.Type == SymbolType.MegaVortex || cell.Type == SymbolType.UltraVortex)
+            {
+                cell.TargetAffectedCount = affected;
             }
         }
     }

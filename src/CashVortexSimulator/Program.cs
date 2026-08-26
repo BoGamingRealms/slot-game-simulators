@@ -21,11 +21,17 @@ public class CashVortexSimWorkerStats
 
     public int JackpotCoinHits { get; set; }
     public int MiniVortexHits { get; set; }
+    public int MiniVortexZeroHits { get; set; }
     public int MegaVortexHits { get; set; }
+    public int MegaVortexZeroHits { get; set; }
     public int UltraVortexHits { get; set; }
+    public int UltraVortexZeroHits { get; set; }
     public int MiniStrikeHits { get; set; }
+    public int MiniStrikeZeroHits { get; set; }
     public int MegaStrikeHits { get; set; }
+    public int MegaStrikeZeroHits { get; set; }
     public int UltraStrikeHits { get; set; }
+    public int UltraStrikeZeroHits { get; set; }
     public int XWheelHits { get; set; }
 
     // X-Wheel Feature stats (Top of reels)
@@ -139,12 +145,30 @@ public class CashVortexSimWorkerStats
                                 JackpotWins[cell.JackpotType] = JackpotWins.GetValueOrDefault(cell.JackpotType) + jpWin;
                             }
                             break;
-                        case SymbolType.MiniVortex: MiniVortexHits++; break;
-                        case SymbolType.MegaVortex: MegaVortexHits++; break;
-                        case SymbolType.UltraVortex: UltraVortexHits++; break;
-                        case SymbolType.MiniStrike: MiniStrikeHits++; break;
-                        case SymbolType.MegaStrike: MegaStrikeHits++; break;
-                        case SymbolType.UltraStrike: UltraStrikeHits++; break;
+                        case SymbolType.MiniVortex:
+                            MiniVortexHits++;
+                            if (cell.TargetAffectedCount == 0 || cell.CashValue == 0.0) MiniVortexZeroHits++;
+                            break;
+                        case SymbolType.MegaVortex:
+                            MegaVortexHits++;
+                            if (cell.TargetAffectedCount == 0 || cell.CashValue == 0.0) MegaVortexZeroHits++;
+                            break;
+                        case SymbolType.UltraVortex:
+                            UltraVortexHits++;
+                            if (cell.TargetAffectedCount == 0 || cell.CashValue == 0.0) UltraVortexZeroHits++;
+                            break;
+                        case SymbolType.MiniStrike:
+                            MiniStrikeHits++;
+                            if (cell.TargetAffectedCount == 0) MiniStrikeZeroHits++;
+                            break;
+                        case SymbolType.MegaStrike:
+                            MegaStrikeHits++;
+                            if (cell.TargetAffectedCount == 0) MegaStrikeZeroHits++;
+                            break;
+                        case SymbolType.UltraStrike:
+                            UltraStrikeHits++;
+                            if (cell.TargetAffectedCount == 0) UltraStrikeZeroHits++;
+                            break;
                         case SymbolType.XWheel: XWheelHits++; break;
                     }
                 }
@@ -263,11 +287,17 @@ class Program
 
             int jackpotCoinHits = 0;
             int miniVortexHits = 0;
+            int miniVortexZeroHits = 0;
             int megaVortexHits = 0;
+            int megaVortexZeroHits = 0;
             int ultraVortexHits = 0;
+            int ultraVortexZeroHits = 0;
             int miniStrikeHits = 0;
+            int miniStrikeZeroHits = 0;
             int megaStrikeHits = 0;
+            int megaStrikeZeroHits = 0;
             int ultraStrikeHits = 0;
+            int ultraStrikeZeroHits = 0;
             int xWheelHits = 0;
             long xWheelTotalWin = 0;
 
@@ -305,11 +335,17 @@ class Program
 
                 jackpotCoinHits += w.JackpotCoinHits;
                 miniVortexHits += w.MiniVortexHits;
+                miniVortexZeroHits += w.MiniVortexZeroHits;
                 megaVortexHits += w.MegaVortexHits;
+                megaVortexZeroHits += w.MegaVortexZeroHits;
                 ultraVortexHits += w.UltraVortexHits;
+                ultraVortexZeroHits += w.UltraVortexZeroHits;
                 miniStrikeHits += w.MiniStrikeHits;
+                miniStrikeZeroHits += w.MiniStrikeZeroHits;
                 megaStrikeHits += w.MegaStrikeHits;
+                megaStrikeZeroHits += w.MegaStrikeZeroHits;
                 ultraStrikeHits += w.UltraStrikeHits;
+                ultraStrikeZeroHits += w.UltraStrikeZeroHits;
                 xWheelHits += w.XWheelHits;
                 xWheelTotalWin += w.XWheelTotalWin;
 
@@ -374,6 +410,27 @@ class Program
             Console.WriteLine($"    - Lock & Slingo™ Bonus RTP: {lockAndSlingoRtp:P2}");
             Console.WriteLine($"  - Hit Frequency: {hitFreq:P2}");
             Console.WriteLine($"  - Total Slingo Lines Completed: {totalSlingoLines:N0} (1 in {((double)totalSpins / Math.Max(1, totalSlingoLines)):F2} spins)");
+
+            int totalStrikeHits = miniStrikeHits + megaStrikeHits + ultraStrikeHits;
+            int totalStrikeZeroHits = miniStrikeZeroHits + megaStrikeZeroHits + ultraStrikeZeroHits;
+            int totalVortexHits = miniVortexHits + megaVortexHits + ultraVortexHits;
+            int totalVortexZeroHits = miniVortexZeroHits + megaVortexZeroHits + ultraVortexZeroHits;
+
+            Console.WriteLine("\n=========================================================================================");
+            Console.WriteLine("          SPECIAL SYMBOL TARGET EFFICIENCY & ZERO-EFFECT ANALYSIS                        ");
+            Console.WriteLine("=========================================================================================");
+            Console.WriteLine($"1. CASH STRIKES (Landed, but boosted 0 targets in range):");
+            Console.WriteLine($"   * Overall Cash Strikes: {totalStrikeZeroHits:N0} / {totalStrikeHits:N0} boosted NOTHING ({((double)totalStrikeZeroHits / Math.Max(1, totalStrikeHits)):P2} of strike landings | {((double)totalStrikeZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, totalStrikeZeroHits)):F1} spins)");
+            Console.WriteLine($"     - Mini Strike:  {miniStrikeZeroHits,6:N0} / {miniStrikeHits,6:N0} ({((double)miniStrikeZeroHits / Math.Max(1, miniStrikeHits)),6:P2}) boosted 0 targets | {((double)miniStrikeZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, miniStrikeZeroHits)):F1} spins");
+            Console.WriteLine($"     - Mega Strike:  {megaStrikeZeroHits,6:N0} / {megaStrikeHits,6:N0} ({((double)megaStrikeZeroHits / Math.Max(1, megaStrikeHits)),6:P2}) boosted 0 targets | {((double)megaStrikeZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, megaStrikeZeroHits)):F1} spins");
+            Console.WriteLine($"     - Ultra Strike: {ultraStrikeZeroHits,6:N0} / {ultraStrikeHits,6:N0} ({((double)ultraStrikeZeroHits / Math.Max(1, ultraStrikeHits)),6:P2}) boosted 0 targets | {((double)ultraStrikeZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, ultraStrikeZeroHits)):F1} spins");
+
+            Console.WriteLine($"\n2. CASH VORTEXES (Landed, but collected 0 targets / 0 cash value in range):");
+            Console.WriteLine($"   * Overall Cash Vortexes: {totalVortexZeroHits:N0} / {totalVortexHits:N0} collected NOTHING ({((double)totalVortexZeroHits / Math.Max(1, totalVortexHits)):P2} of vortex landings | {((double)totalVortexZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, totalVortexZeroHits)):F1} spins)");
+            Console.WriteLine($"     - Mini Vortex:  {miniVortexZeroHits,6:N0} / {miniVortexHits,6:N0} ({((double)miniVortexZeroHits / Math.Max(1, miniVortexHits)),6:P2}) collected 0 targets | {((double)miniVortexZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, miniVortexZeroHits)):F1} spins");
+            Console.WriteLine($"     - Mega Vortex:  {megaVortexZeroHits,6:N0} / {megaVortexHits,6:N0} ({((double)megaVortexZeroHits / Math.Max(1, megaVortexHits)),6:P2}) collected 0 targets | {((double)megaVortexZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, megaVortexZeroHits)):F1} spins");
+            Console.WriteLine($"     - Ultra Vortex: {ultraVortexZeroHits,6:N0} / {ultraVortexHits,6:N0} ({((double)ultraVortexZeroHits / Math.Max(1, ultraVortexHits)),6:P2}) collected 0 targets | {((double)ultraVortexZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, ultraVortexZeroHits)):F1} spins");
+            Console.WriteLine("=========================================================================================");
 
             Console.WriteLine("\n[Center Wild Wheel Bonus Breakdown]");
             Console.WriteLine($"  - Total Triggers: {centerWheelTriggers:N0} (1 in {((double)totalSpins / Math.Max(1, centerWheelTriggers)):F2} spins | {((double)centerWheelTriggers / totalSpins):P2})");
