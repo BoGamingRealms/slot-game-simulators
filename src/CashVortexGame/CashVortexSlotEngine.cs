@@ -371,7 +371,7 @@ public class CashVortexSlotEngine : ISlotEngine
                         if (t.CashValue > 0) affected++;
                     }
                 }
-                cell.CashValue = sum;
+                cell.CashValue = _config.MiniVortexBasePay + sum;
             }
             else if (cell.Type == SymbolType.MegaVortex)
             {
@@ -385,7 +385,7 @@ public class CashVortexSlotEngine : ISlotEngine
                         if (t.CashValue > 0) affected++;
                     }
                 }
-                cell.CashValue = sum;
+                cell.CashValue = _config.MegaVortexBasePay + sum;
             }
             else if (cell.Type == SymbolType.UltraVortex)
             {
@@ -402,7 +402,7 @@ public class CashVortexSlotEngine : ISlotEngine
                         }
                     }
                 }
-                cell.CashValue = sum;
+                cell.CashValue = _config.UltraVortexBasePay + sum;
             }
 
             if (cell.Type == SymbolType.MiniVortex || cell.Type == SymbolType.MegaVortex || cell.Type == SymbolType.UltraVortex)
@@ -695,7 +695,7 @@ public class CashVortexSlotEngine : ISlotEngine
                                     break;
 
                                 case SymbolType.MiniVortex:
-                                    cell.CashValue = 0.0;
+                                    cell.CashValue = _config.MiniVortexBasePay;
                                     break;
 
                                 case SymbolType.XWheel:
@@ -736,9 +736,23 @@ public class CashVortexSlotEngine : ISlotEngine
         // Count completed Slingo lines on the bonus grid (0..12)
         int completedSlingos = CountBonusSlingos(bonusGrid);
 
+        // Sum initial locked symbol cash values on the bonus grid before ladder prize
+        double initialBoardCashSum = 0.0;
+        for (int r = 0; r < 5; r++)
+        {
+            for (int c = 0; c < 5; c++)
+            {
+                if (bonusGrid[r, c].Type != SymbolType.Blank)
+                {
+                    initialBoardCashSum += bonusGrid[r, c].CashValue;
+                }
+            }
+        }
+        long baseBoardWinCents = (long)Math.Round(initialBoardCashSum * 100);
+
         // Find highest achieved Slingo ladder prize
         var ladderPrize = _config.SlingoLadderPrizes
-            .Where(p => p.SlingoCount <= completedSlingos && p.Type != WheelPrizeType.Multiplier || p.ParameterValue > 0)
+            .Where(p => p.SlingoCount <= completedSlingos)
             .OrderByDescending(p => p.SlingoCount)
             .FirstOrDefault();
 
@@ -748,6 +762,34 @@ public class CashVortexSlotEngine : ISlotEngine
         {
             switch (ladderPrize.Type)
             {
+                case WheelPrizeType.MiniStrike:
+                    ladderMultiplier = ladderPrize.ParameterValue;
+                    int[][] mOrtho = { new[] { 1, 2 }, new[] { 3, 2 }, new[] { 2, 1 }, new[] { 2, 3 } };
+                    foreach (var p in mOrtho)
+                    {
+                        var cell = bonusGrid[p[0], p[1]];
+                        if (cell.Type != SymbolType.Blank && cell.Type != SymbolType.JackpotCoin)
+                        {
+                            cell.CashValue += ladderPrize.ParameterValue;
+                        }
+                    }
+                    break;
+
+                case WheelPrizeType.MegaStrike:
+                    ladderMultiplier = ladderPrize.ParameterValue;
+                    for (int c = 0; c < 5; c++)
+                    {
+                        var cell = bonusGrid[2, c];
+                        if (cell.Type != SymbolType.Blank && cell.Type != SymbolType.JackpotCoin) cell.CashValue += ladderPrize.ParameterValue;
+                    }
+                    for (int r = 0; r < 5; r++)
+                    {
+                        if (r == 2) continue;
+                        var cell = bonusGrid[r, 2];
+                        if (cell.Type != SymbolType.Blank && cell.Type != SymbolType.JackpotCoin) cell.CashValue += ladderPrize.ParameterValue;
+                    }
+                    break;
+
                 case WheelPrizeType.UltraStrike:
                     ladderMultiplier = ladderPrize.ParameterValue;
                     for (int r = 0; r < 5; r++)
@@ -761,6 +803,49 @@ public class CashVortexSlotEngine : ISlotEngine
                             }
                         }
                     }
+                    break;
+
+                case WheelPrizeType.MiniVortex:
+                    int[][] mvOrtho = { new[] { 1, 2 }, new[] { 3, 2 }, new[] { 2, 1 }, new[] { 2, 3 } };
+                    double mvSum = _config.MiniVortexBasePay;
+                    foreach (var p in mvOrtho)
+                    {
+                        var cell = bonusGrid[p[0], p[1]];
+                        if (cell.Type != SymbolType.Blank) mvSum += cell.CashValue;
+                    }
+                    ladderMultiplier = mvSum;
+                    bonusDirectJackpotWin += (long)Math.Round(mvSum * 100);
+                    break;
+
+                case WheelPrizeType.MegaVortex:
+                    double megaVSum = _config.MegaVortexBasePay;
+                    for (int c = 0; c < 5; c++)
+                    {
+                        var cell = bonusGrid[2, c];
+                        if (cell.Type != SymbolType.Blank) megaVSum += cell.CashValue;
+                    }
+                    for (int r = 0; r < 5; r++)
+                    {
+                        if (r == 2) continue;
+                        var cell = bonusGrid[r, 2];
+                        if (cell.Type != SymbolType.Blank) megaVSum += cell.CashValue;
+                    }
+                    ladderMultiplier = megaVSum;
+                    bonusDirectJackpotWin += (long)Math.Round(megaVSum * 100);
+                    break;
+
+                case WheelPrizeType.UltraVortex:
+                    double uvSum = _config.UltraVortexBasePay;
+                    for (int r = 0; r < 5; r++)
+                    {
+                        for (int c = 0; c < 5; c++)
+                        {
+                            var cell = bonusGrid[r, c];
+                            if (cell.Type != SymbolType.Blank) uvSum += cell.CashValue;
+                        }
+                    }
+                    ladderMultiplier = uvSum;
+                    bonusDirectJackpotWin += (long)Math.Round(uvSum * 100);
                     break;
 
                 case WheelPrizeType.Multiplier:
@@ -810,6 +895,7 @@ public class CashVortexSlotEngine : ISlotEngine
 
         long boardPayoutCents = (long)Math.Round(boardCashSum * 100);
         long totalBonusWinCents = boardPayoutCents + bonusDirectJackpotWin;
+        long ladderPrizeWinCents = totalBonusWinCents - baseBoardWinCents;
 
         spinResult.TotalWin += totalBonusWinCents;
 
@@ -821,7 +907,9 @@ public class CashVortexSlotEngine : ISlotEngine
             SpinsPlayed = bonusSpinsCount,
             CompletedSlingos = completedSlingos,
             CashValuesSum = boardCashSum,
-            LadderPrize = ladderMultiplier
+            LadderPrize = ladderMultiplier,
+            BaseBoardWinCents = baseBoardWinCents,
+            LadderPrizeWinCents = ladderPrizeWinCents
         });
     }
 
@@ -844,6 +932,265 @@ public class CashVortexSlotEngine : ISlotEngine
             if (complete) completed++;
         }
         return completed;
+    }
+
+    public (int completedSlingos, double baseBoardSum, double[] candidateAddedWins, double[] candidateTotalWins) SimulateBonusForLadderCandidates(IRng rng)
+    {
+        var bonusGrid = new GridCell[5, 5];
+        for (int r = 0; r < 5; r++)
+        {
+            for (int c = 0; c < 5; c++)
+            {
+                bonusGrid[r, c] = new GridCell
+                {
+                    Row = r,
+                    Col = c,
+                    Type = SymbolType.Blank,
+                    CashValue = 0.0,
+                    LifeRemaining = 0
+                };
+            }
+        }
+
+        int currentLives = 3;
+        int bonusSpinsCount = 0;
+        long bonusDirectJackpotWin = 0;
+        var spinResultDummy = new SpinResult();
+
+        while (currentLives > 0)
+        {
+            int emptyCount = GetBonusEmptyPositionsCount(bonusGrid);
+            if (emptyCount == 0) // Full House
+            {
+                break;
+            }
+
+            bonusSpinsCount++;
+
+            int bucket = emptyCount > 20 ? 0 : (emptyCount > 15 ? 1 : (emptyCount > 10 ? 2 : (emptyCount > 5 ? 3 : 4)));
+            int landingWeight = _config.BonusLandingWeightsByLifeAndBucket[currentLives, bucket];
+            if (landingWeight <= 0) landingWeight = 50;
+
+            bool lands = rng.Next(_config.BonusBaseFactor) < landingWeight;
+
+            if (lands)
+            {
+                currentLives = 3;
+
+                var weightTable = (bucket < _config.BonusOutcomeWeightsByBucket.Length && _config.BonusOutcomeWeightsByBucket[bucket].TotalWeight > 0)
+                    ? _config.BonusOutcomeWeightsByBucket[bucket]
+                    : null;
+
+                BonusOutcomeDef? outcomeDef = null;
+                if (weightTable != null && _config.BonusOutcomeDefs.Count > 0)
+                {
+                    int outcomeIdx = weightTable.Sample(rng);
+                    if (outcomeIdx >= 0 && outcomeIdx < _config.BonusOutcomeDefs.Count)
+                    {
+                        outcomeDef = _config.BonusOutcomeDefs[outcomeIdx];
+                    }
+                }
+
+                var emptyPositions = GetBonusEmptyPositions(bonusGrid);
+                var newlyLandedBonusCells = new List<GridCell>();
+
+                if (outcomeDef != null && outcomeDef.Items.Count > 0)
+                {
+                    foreach (var item in outcomeDef.Items)
+                    {
+                        for (int i = 0; i < item.Count; i++)
+                        {
+                            if (emptyPositions.Count == 0) break;
+
+                            int posIdx = rng.Next(emptyPositions.Count);
+                            var pos = emptyPositions[posIdx];
+                            emptyPositions.RemoveAt(posIdx);
+
+                            var cell = bonusGrid[pos.r, pos.c];
+                            cell.Type = item.Type;
+                            cell.JustLanded = true;
+                            cell.LifeRemaining = int.MaxValue;
+
+                            switch (item.Type)
+                            {
+                                case SymbolType.CashCoin:
+                                    cell.CashValue = SampleBonusCashCoinValue(rng);
+                                    break;
+
+                                case SymbolType.JackpotCoin:
+                                    int jpIdx = (_config.BonusJackpotWeights.TotalWeight > 0)
+                                        ? _config.BonusJackpotWeights.Sample(rng)
+                                        : rng.Next(Math.Max(1, _config.JackpotCoins.Count));
+                                    var jpList = _config.BonusJackpotCoins.Count > 0 ? _config.BonusJackpotCoins : _config.JackpotCoins;
+                                    var jpDef = jpList[Math.Min(jpIdx, jpList.Count - 1)];
+                                    cell.JackpotType = jpDef.JackpotName;
+                                    cell.CashValue = jpDef.Multiplier;
+                                    break;
+
+                                case SymbolType.MiniStrike:
+                                    int strTypeIdx = (_config.BonusCashStrikeTypeWeights.TotalWeight > 0)
+                                        ? _config.BonusCashStrikeTypeWeights.Sample(rng)
+                                        : 0;
+                                    cell.Type = strTypeIdx switch
+                                    {
+                                        1 => SymbolType.MegaStrike,
+                                        2 => SymbolType.UltraStrike,
+                                        _ => SymbolType.MiniStrike
+                                    };
+                                    cell.CashValue = SampleBonusCashStrikeValue(rng);
+                                    break;
+
+                                case SymbolType.MiniVortex:
+                                    cell.CashValue = _config.MiniVortexBasePay;
+                                    break;
+
+                                case SymbolType.XWheel:
+                                    cell.CashValue = 1.0;
+                                    break;
+                            }
+                            newlyLandedBonusCells.Add(cell);
+                        }
+                    }
+                }
+                else if (emptyPositions.Count > 0)
+                {
+                    int posIdx = rng.Next(emptyPositions.Count);
+                    var pos = emptyPositions[posIdx];
+                    var cell = bonusGrid[pos.r, pos.c];
+                    cell.Type = SymbolType.CashCoin;
+                    cell.CashValue = SampleBonusCashCoinValue(rng);
+                    cell.JustLanded = true;
+                    newlyLandedBonusCells.Add(cell);
+                }
+
+                ExecuteBonusSpecialSymbolActions(bonusGrid, newlyLandedBonusCells);
+
+                if (newlyLandedBonusCells.Any(c => c.Type == SymbolType.XWheel))
+                {
+                    RunBonusWheelFeature(rng, bonusGrid, spinResultDummy, ref bonusDirectJackpotWin);
+                }
+            }
+            else
+            {
+                currentLives--;
+            }
+        }
+
+        int completedSlingos = CountBonusSlingos(bonusGrid);
+
+        double baseBoardSum = 0.0;
+        double nonJackpotBoardSum = 0.0;
+        int nonJackpotCellCount = 0;
+
+        for (int r = 0; r < 5; r++)
+        {
+            for (int c = 0; c < 5; c++)
+            {
+                var cell = bonusGrid[r, c];
+                if (cell.Type != SymbolType.Blank)
+                {
+                    baseBoardSum += cell.CashValue;
+                    if (cell.Type != SymbolType.JackpotCoin)
+                    {
+                        nonJackpotBoardSum += cell.CashValue;
+                        nonJackpotCellCount++;
+                    }
+                }
+            }
+        }
+
+        double baseTotalWin = baseBoardSum + (bonusDirectJackpotWin / 100.0);
+
+        // Compute the 11 candidate prizes:
+        // 0: Mini Strike 1
+        // 1: Mini Vortex
+        // 2: Mega Strike 2
+        // 3: Mega Vortex
+        // 4: Mini Jackpot (5x)
+        // 5: Ultra Strike 5
+        // 6: Mega Jackpot (50x)
+        // 7: Ultra Vortex
+        // 8: Ultra Jackpot (500x)
+        // 9: Multiplier x2
+        // 10: Multiplier x3
+
+        double[] candidateAdded = new double[11];
+
+        // 0: Mini Strike 1 (Orthogonal 4 positions around center (2,2): (1,2), (3,2), (2,1), (2,3))
+        int miniStrikeTargets = 0;
+        int[][] orthoPos = { new[] { 1, 2 }, new[] { 3, 2 }, new[] { 2, 1 }, new[] { 2, 3 } };
+        foreach (var p in orthoPos)
+        {
+            if (bonusGrid[p[0], p[1]].Type != SymbolType.Blank && bonusGrid[p[0], p[1]].Type != SymbolType.JackpotCoin)
+            {
+                miniStrikeTargets++;
+            }
+        }
+        candidateAdded[0] = miniStrikeTargets * 1.0;
+
+        // 1: Mini Vortex (Collects orthogonal 4 positions + base pay)
+        double miniVortexSum = _config.MiniVortexBasePay;
+        foreach (var p in orthoPos)
+        {
+            if (bonusGrid[p[0], p[1]].Type != SymbolType.Blank)
+            {
+                miniVortexSum += bonusGrid[p[0], p[1]].CashValue;
+            }
+        }
+        candidateAdded[1] = miniVortexSum;
+
+        // 2: Mega Strike 2 (+2.0 to row 2 and col 2, up to 9 cells)
+        int megaStrikeTargets = 0;
+        for (int c = 0; c < 5; c++)
+        {
+            if (bonusGrid[2, c].Type != SymbolType.Blank && bonusGrid[2, c].Type != SymbolType.JackpotCoin) megaStrikeTargets++;
+        }
+        for (int r = 0; r < 5; r++)
+        {
+            if (r != 2 && bonusGrid[r, 2].Type != SymbolType.Blank && bonusGrid[r, 2].Type != SymbolType.JackpotCoin) megaStrikeTargets++;
+        }
+        candidateAdded[2] = megaStrikeTargets * 2.0;
+
+        // 3: Mega Vortex (Collects row 2 and col 2 + base pay)
+        double megaVortexSum = _config.MegaVortexBasePay;
+        for (int c = 0; c < 5; c++)
+        {
+            if (bonusGrid[2, c].Type != SymbolType.Blank) megaVortexSum += bonusGrid[2, c].CashValue;
+        }
+        for (int r = 0; r < 5; r++)
+        {
+            if (r != 2 && bonusGrid[r, 2].Type != SymbolType.Blank) megaVortexSum += bonusGrid[r, 2].CashValue;
+        }
+        candidateAdded[3] = megaVortexSum;
+
+        // 4: Mini Jackpot
+        candidateAdded[4] = 5.0;
+
+        // 5: Ultra Strike 5 (+5.0 to all non-jackpot cash cells on grid)
+        candidateAdded[5] = nonJackpotCellCount * 5.0;
+
+        // 6: Mega Jackpot
+        candidateAdded[6] = 50.0;
+
+        // 7: Ultra Vortex (Collects all cells on grid + base pay)
+        candidateAdded[7] = _config.UltraVortexBasePay + baseBoardSum;
+
+        // 8: Ultra Jackpot
+        candidateAdded[8] = 500.0;
+
+        // 9: Multiplier x2 (+1x nonJackpotBoardSum)
+        candidateAdded[9] = nonJackpotBoardSum * 1.0;
+
+        // 10: Multiplier x3 (+2x nonJackpotBoardSum)
+        candidateAdded[10] = nonJackpotBoardSum * 2.0;
+
+        double[] candidateTotals = new double[11];
+        for (int i = 0; i < 11; i++)
+        {
+            candidateTotals[i] = baseTotalWin + candidateAdded[i];
+        }
+
+        return (completedSlingos, baseTotalWin, candidateAdded, candidateTotals);
     }
 
     private static int GetBonusEmptyPositionsCount(GridCell[,] bonusGrid)
@@ -952,7 +1299,7 @@ public class CashVortexSlotEngine : ISlotEngine
                         if (IsValuableTarget(t.Type)) sum += t.CashValue;
                     }
                 }
-                cell.CashValue = sum;
+                cell.CashValue = _config.MiniVortexBasePay + sum;
             }
             else if (cell.Type == SymbolType.MegaVortex)
             {
@@ -962,7 +1309,7 @@ public class CashVortexSlotEngine : ISlotEngine
                 {
                     if (t != cell && IsValuableTarget(t.Type)) sum += t.CashValue;
                 }
-                cell.CashValue = sum;
+                cell.CashValue = _config.MegaVortexBasePay + sum;
             }
             else if (cell.Type == SymbolType.UltraVortex)
             {
@@ -975,7 +1322,7 @@ public class CashVortexSlotEngine : ISlotEngine
                         if (t != cell && IsValuableTarget(t.Type)) sum += t.CashValue;
                     }
                 }
-                cell.CashValue = sum;
+                cell.CashValue = _config.UltraVortexBasePay + sum;
             }
         }
     }

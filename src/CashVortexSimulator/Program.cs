@@ -57,6 +57,9 @@ public class CashVortexSimWorkerStats
     public long LockAndSlingoTotalSlingos { get; set; }
     public int LockAndSlingoFullHouses { get; set; }
     public int[] LockAndSlingoLadderHits { get; set; } = new int[13];
+    public long[] LockAndSlingoLadderWins { get; set; } = new long[13];
+    public long[] LockAndSlingoLadderBoardWins { get; set; } = new long[13];
+    public long[] LockAndSlingoLadderPrizeWins { get; set; } = new long[13];
 
     public CashVortexSimWorkerStats(CashVortexConfig config)
     {
@@ -120,6 +123,10 @@ public class CashVortexSimWorkerStats
 
                 int slingoIdx = Math.Clamp(pot.CompletedSlingos, 0, 12);
                 LockAndSlingoLadderHits[slingoIdx]++;
+                LockAndSlingoLadderWins[slingoIdx] += pot.Win;
+                LockAndSlingoLadderBoardWins[slingoIdx] += pot.BaseBoardWinCents;
+                LockAndSlingoLadderPrizeWins[slingoIdx] += pot.LadderPrizeWinCents;
+
                 if (slingoIdx == 12)
                 {
                     LockAndSlingoFullHouses++;
@@ -200,6 +207,8 @@ class Program
 
         bool trackFullStats = true;
         bool useBalanced = false;
+        bool evalPrizes = false;
+        bool showDataTab = false;
         int totalSpinsArg = 1_000_000;
         string? explicitTargetConfig = null;
 
@@ -217,6 +226,14 @@ class Program
             else if (arg.Equals("--balanced", StringComparison.OrdinalIgnoreCase) || arg.Equals("--955", StringComparison.OrdinalIgnoreCase))
             {
                 useBalanced = true;
+            }
+            else if (arg.Equals("--prizes", StringComparison.OrdinalIgnoreCase) || arg.Equals("--eval-prizes", StringComparison.OrdinalIgnoreCase))
+            {
+                evalPrizes = true;
+            }
+            else if (arg.Equals("--data", StringComparison.OrdinalIgnoreCase) || arg.Equals("--show-data", StringComparison.OrdinalIgnoreCase) || arg.Equals("--export-data", StringComparison.OrdinalIgnoreCase))
+            {
+                showDataTab = true;
             }
             else if ((arg.Equals("--spins", StringComparison.OrdinalIgnoreCase) || arg.Equals("-s", StringComparison.OrdinalIgnoreCase)) && i + 1 < args.Length)
             {
@@ -262,14 +279,35 @@ class Program
             Console.WriteLine($"Jackpot Types: {config.JackpotCoins.Count}");
             Console.WriteLine($"Cash Strike Values Count: {config.CashStrikeValues.Count}");
             Console.WriteLine($"Cash Coin Values Count: {config.CashCoinValues.Count}");
+            Console.WriteLine($"Cash Vortex Base Pays: {config.CashVortexBasePays.Count} (Mini: {config.MiniVortexBasePay}x, Mega: {config.MegaVortexBasePay}x, Ultra: {config.UltraVortexBasePay}x)");
+            foreach (var vp in config.CashVortexBasePays)
+            {
+                Console.WriteLine($"   * {vp.VortexName}: BasePay = {vp.BaseMultiplier}x");
+            }
             Console.WriteLine($"Center Wheel Prizes: {config.CenterWheelPrizes.Count}");
             Console.WriteLine($"X-Wheel Mini Wheel Prizes: {config.MiniWheelPrizes.Count}");
             Console.WriteLine($"X-Wheel Mega Wheel Prizes: {config.MegaWheelPrizes.Count}");
             Console.WriteLine($"X-Wheel Ultra Wheel Prizes: {config.UltraWheelPrizes.Count}");
             Console.WriteLine($"Slingo Ladder Prizes: {config.SlingoLadderPrizes.Count}");
+            foreach (var lp in config.SlingoLadderPrizes.OrderBy(x => x.SlingoCount))
+            {
+                Console.WriteLine($"   * Slingo {lp.SlingoCount,2}: PrizeString = \"{lp.PrizeString}\" | Type = {lp.Type} | ParameterValue = {lp.ParameterValue} | JackpotType = {lp.JackpotType ?? "None"}");
+            }
             Console.WriteLine($"Bonus Landing Base Factor: {config.BonusBaseFactor}");
             Console.WriteLine($"Bonus Outcome Types: {config.BonusOutcomeDefs.Count}");
             Console.WriteLine("-------------------------------------------------------------------------------------\n");
+
+            if (showDataTab)
+            {
+                PrintConfigDataTabFormat(config);
+                return;
+            }
+
+            if (evalPrizes)
+            {
+                RunPrizeEvaluation(config, totalSpinsArg);
+                return;
+            }
 
             int totalSpins = totalSpinsArg;
             int workerCount = Environment.ProcessorCount;
@@ -338,6 +376,9 @@ class Program
             long lockAndSlingoTotalSlingos = 0;
             int lockAndSlingoFullHouses = 0;
             int[] lockAndSlingoLadderHits = new int[13];
+            long[] lockAndSlingoLadderWins = new long[13];
+            long[] lockAndSlingoLadderBoardWins = new long[13];
+            long[] lockAndSlingoLadderPrizeWins = new long[13];
 
             var jackpotHits = new Dictionary<string, int>();
             var jackpotWins = new Dictionary<string, long>();
@@ -389,6 +430,9 @@ class Program
                 for (int s = 0; s <= 12; s++)
                 {
                     lockAndSlingoLadderHits[s] += w.LockAndSlingoLadderHits[s];
+                    lockAndSlingoLadderWins[s] += w.LockAndSlingoLadderWins[s];
+                    lockAndSlingoLadderBoardWins[s] += w.LockAndSlingoLadderBoardWins[s];
+                    lockAndSlingoLadderPrizeWins[s] += w.LockAndSlingoLadderPrizeWins[s];
                 }
 
                 for (int l = 1; l <= 3; l++)
@@ -527,13 +571,23 @@ class Program
                     }
                 }
 
-                Console.WriteLine("\n[Lock & Slingo Ladder Achievements]");
+                Console.WriteLine("\n[Lock & Slingo Ladder Achievements & Average Payouts]");
                 for (int s = 0; s <= 12; s++)
                 {
                     if (s == 11) continue;
                     int sHits = lockAndSlingoLadderHits[s];
                     double sChance = lockAndSlingoTriggers > 0 ? (double)sHits / lockAndSlingoTriggers : 0;
-                    Console.WriteLine($"  - Slingo {s,2} Line(s): Hits = {sHits,6:N0} | {sChance,7:P2} of bonus rounds");
+                    var ladderDef = config.SlingoLadderPrizes.FirstOrDefault(p => p.SlingoCount == s);
+                    string desc = ladderDef?.PrizeString ?? (s == 0 ? "No Lines" : "Standard");
+                    if (s == 12) desc = "FULL HOUSE (Ultra 500x)";
+                    else if (s == 8) desc = "Mega Jackpot (50x)";
+                    else if (s == 4) desc = "Mini Jackpot (5x)";
+
+                    double avgBonusWin = sHits > 0 ? (double)lockAndSlingoLadderWins[s] / (sHits * 100.0) : 0;
+                    double avgBoardWin = sHits > 0 ? (double)lockAndSlingoLadderBoardWins[s] / (sHits * 100.0) : 0;
+                    double avgPrizeWin = sHits > 0 ? (double)lockAndSlingoLadderPrizeWins[s] / (sHits * 100.0) : 0;
+
+                    Console.WriteLine($"  - Slingo {s,2} Line(s) [{desc,-25}]: Hits = {sHits,6:N0} ({sChance,6:P2}) | Avg Board = {avgBoardWin,5:F2}x | Avg Ladder Prize = {avgPrizeWin,6:F2}x | Avg Total Bonus Win = {avgBonusWin,6:F2}x");
                 }
             }
 
@@ -593,6 +647,9 @@ class Program
                 wheelPrizeHits,
                 wheelPrizeWins,
                 lockAndSlingoLadderHits,
+                lockAndSlingoLadderWins,
+                lockAndSlingoLadderBoardWins,
+                lockAndSlingoLadderPrizeWins,
                 jackpotHits,
                 jackpotWins);
 
@@ -666,9 +723,13 @@ class Program
 
             var wsLns = workbook.Worksheets.Add("Lock & Slingo Details");
             wsLns.Cell(1, 1).Value = "Slingo Level";
-            wsLns.Cell(1, 2).Value = "Hits";
-            wsLns.Cell(1, 3).Value = "Bonus Round Hit Chance %";
-            wsLns.Cell(1, 4).Value = "Total Spins Hit Chance %";
+            wsLns.Cell(1, 2).Value = "Ladder Award";
+            wsLns.Cell(1, 3).Value = "Hits";
+            wsLns.Cell(1, 4).Value = "Bonus Hit Chance %";
+            wsLns.Cell(1, 5).Value = "Total Spins Chance %";
+            wsLns.Cell(1, 6).Value = "Avg Base Board Win (x bet)";
+            wsLns.Cell(1, 7).Value = "Avg Ladder Prize Win (x bet)";
+            wsLns.Cell(1, 8).Value = "Avg Total Bonus Win (x bet)";
             wsLns.Row(1).Style.Font.Bold = true;
 
             int lnsRow = 2;
@@ -679,10 +740,24 @@ class Program
                 double sChance = lockAndSlingoTriggers > 0 ? (double)sHits / lockAndSlingoTriggers : 0;
                 double sChanceSpins = (double)sHits / totalSpins;
 
+                var ladderDef = config.SlingoLadderPrizes.FirstOrDefault(p => p.SlingoCount == s);
+                string desc = ladderDef?.PrizeString ?? (s == 0 ? "No Lines" : "Standard");
+                if (s == 12) desc = "FULL HOUSE (Ultra Jackpot 500x)";
+                else if (s == 8) desc = "Mega Jackpot (50x)";
+                else if (s == 4) desc = "Mini Jackpot (5x)";
+
+                double avgBonusWin = sHits > 0 ? (double)lockAndSlingoLadderWins[s] / (sHits * 100.0) : 0;
+                double avgBoardWin = sHits > 0 ? (double)lockAndSlingoLadderBoardWins[s] / (sHits * 100.0) : 0;
+                double avgPrizeWin = sHits > 0 ? (double)lockAndSlingoLadderPrizeWins[s] / (sHits * 100.0) : 0;
+
                 wsLns.Cell(lnsRow, 1).Value = $"Slingo {s}";
-                wsLns.Cell(lnsRow, 2).Value = sHits;
-                wsLns.Cell(lnsRow, 3).Value = $"{sChance:P2}";
-                wsLns.Cell(lnsRow, 4).Value = $"{sChanceSpins:P4}";
+                wsLns.Cell(lnsRow, 2).Value = desc;
+                wsLns.Cell(lnsRow, 3).Value = sHits;
+                wsLns.Cell(lnsRow, 4).Value = $"{sChance:P2}";
+                wsLns.Cell(lnsRow, 5).Value = $"{sChanceSpins:P4}";
+                wsLns.Cell(lnsRow, 6).Value = $"{avgBoardWin:F2}";
+                wsLns.Cell(lnsRow, 7).Value = $"{avgPrizeWin:F2}";
+                wsLns.Cell(lnsRow, 8).Value = $"{avgBonusWin:F2}";
                 lnsRow++;
             }
             wsLns.Columns().AdjustToContents();
@@ -758,6 +833,9 @@ class Program
                         wheelPrizeHits,
                         wheelPrizeWins,
                         lockAndSlingoLadderHits,
+                        lockAndSlingoLadderWins,
+                        lockAndSlingoLadderBoardWins,
+                        lockAndSlingoLadderPrizeWins,
                         jackpotHits,
                         jackpotWins);
 
@@ -778,6 +856,309 @@ class Program
             Console.WriteLine(ex.StackTrace);
             Console.WriteLine("=========================================================================================");
         }
+    }
+
+    public static void PrintConfigDataTabFormat(CashVortexConfig config)
+    {
+        Console.WriteLine("=========================================================================================");
+        Console.WriteLine("            'DATA' TAB CONFIGURATION TABLE (TAB-SEPARATED FOR EXCEL/SHEETS)              ");
+        Console.WriteLine("=========================================================================================\n");
+
+        // 1. Table Selections
+        Console.WriteLine("Table Selections\tWeight");
+        foreach (var ts in config.TableSelections)
+        {
+            Console.WriteLine($"{ts.Description}\t{ts.Weight}");
+        }
+        Console.WriteLine();
+
+        // 2. Special Symbols Chance
+        Console.WriteLine("Special Symbols Chance\tSpecial Symbol\tNo Special Symbol");
+        foreach (var sc in config.SpecialSymbolChances)
+        {
+            Console.WriteLine($"{sc.Description}\t{sc.SpecialSymbolWeight}\t{sc.NoSpecialSymbolWeight}");
+        }
+        Console.WriteLine();
+
+        // 3. Special Symbols
+        Console.WriteLine("Special Symbols\tWeight");
+        foreach (var ss in config.SpecialSymbolDefs)
+        {
+            Console.WriteLine($"{ss.SymbolName}\t{ss.Weight}");
+        }
+        Console.WriteLine();
+
+        // 4. Cash Vortex Base Pays
+        Console.WriteLine("Cash Vortex\tBase Pay");
+        foreach (var vp in config.CashVortexBasePays)
+        {
+            Console.WriteLine($"{vp.VortexName}\t{vp.BaseMultiplier}");
+        }
+        Console.WriteLine();
+
+        // 5. Jackpot Coins
+        Console.WriteLine("Jackpot Coins\tMultiplier\tWeight");
+        foreach (var jp in config.JackpotCoins)
+        {
+            Console.WriteLine($"{jp.JackpotName}\t{jp.Multiplier}\t{jp.Weight}");
+        }
+        Console.WriteLine();
+
+        // 6. Cash Strikes
+        Console.WriteLine("Cash Strikes\tWeight");
+        foreach (var cs in config.CashStrikeValues)
+        {
+            Console.WriteLine($"{cs.Multiplier}\t{cs.Weight}");
+        }
+        Console.WriteLine();
+
+        // 7. Cash Coins Chance
+        Console.WriteLine("Cash Coins Chance\tCash Coin\tBlank");
+        foreach (var cc in config.CashCoinChances)
+        {
+            Console.WriteLine($"{cc.Description}\t{cc.CoinWeight}\t{cc.BlankWeight}");
+        }
+        Console.WriteLine();
+
+        // 8. Cash Coins Values
+        Console.WriteLine("Cash Coins\tWeight");
+        foreach (var cv in config.CashCoinValues)
+        {
+            Console.WriteLine($"{cv.Multiplier}\t{cv.Weight}");
+        }
+        Console.WriteLine();
+
+        // 9. Wheel Bonus (Center Wild Wheel)
+        Console.WriteLine("Wheel Bonus\tWeight");
+        foreach (var cwp in config.CenterWheelPrizes)
+        {
+            Console.WriteLine($"{cwp.PrizeString}\t{cwp.Weight}");
+        }
+        Console.WriteLine();
+
+        // 10. Mini Wheel (Wheel 1)
+        Console.WriteLine("Mini Wheel\tPrize\tWeight");
+        int mwId = 1;
+        foreach (var p in config.MiniWheelPrizes)
+        {
+            Console.WriteLine($"{mwId++}\t{p.PrizeString}\t{p.Weight}");
+        }
+        Console.WriteLine();
+
+        // 11. Mega Wheel (Wheel 2)
+        Console.WriteLine("Mega Wheel\tPrize\tWeight");
+        int mgwId = 1;
+        foreach (var p in config.MegaWheelPrizes)
+        {
+            Console.WriteLine($"{mgwId++}\t{p.PrizeString}\t{p.Weight}");
+        }
+        Console.WriteLine();
+
+        // 12. Ultra Wheel (Wheel 3)
+        Console.WriteLine("Ultra Wheel\tPrize\tWeight");
+        int uwId = 1;
+        foreach (var p in config.UltraWheelPrizes)
+        {
+            Console.WriteLine($"{uwId++}\t{p.PrizeString}\t{p.Weight}");
+        }
+        Console.WriteLine();
+
+        // 13. Slingo Ladder
+        Console.WriteLine("Slingo Ladder\tPrize");
+        foreach (var lp in config.SlingoLadderPrizes.OrderBy(x => x.SlingoCount))
+        {
+            Console.WriteLine($"{lp.SlingoCount}\t{lp.PrizeString}");
+        }
+        Console.WriteLine();
+
+        // 14. Symbol Landing Chance (Bonus Lives & Bucket Weights)
+        Console.WriteLine("Symbol Landing Chance");
+        Console.WriteLine($"Base Factor\t{config.BonusBaseFactor}");
+        Console.WriteLine("Spaces Left\t1-5\t6-10\t11-15\t16-20\t21-24");
+        Console.WriteLine($"3 Lives\t{config.BonusLandingWeightsByLifeAndBucket[3, 0]}\t{config.BonusLandingWeightsByLifeAndBucket[3, 1]}\t{config.BonusLandingWeightsByLifeAndBucket[3, 2]}\t{config.BonusLandingWeightsByLifeAndBucket[3, 3]}\t{config.BonusLandingWeightsByLifeAndBucket[3, 4]}");
+        Console.WriteLine($"2 Lives\t{config.BonusLandingWeightsByLifeAndBucket[2, 0]}\t{config.BonusLandingWeightsByLifeAndBucket[2, 1]}\t{config.BonusLandingWeightsByLifeAndBucket[2, 2]}\t{config.BonusLandingWeightsByLifeAndBucket[2, 3]}\t{config.BonusLandingWeightsByLifeAndBucket[2, 4]}");
+        Console.WriteLine($"1 Life\t{config.BonusLandingWeightsByLifeAndBucket[1, 0]}\t{config.BonusLandingWeightsByLifeAndBucket[1, 1]}\t{config.BonusLandingWeightsByLifeAndBucket[1, 2]}\t{config.BonusLandingWeightsByLifeAndBucket[1, 3]}\t{config.BonusLandingWeightsByLifeAndBucket[1, 4]}");
+        Console.WriteLine();
+
+        // 15. Symbols Landing Selections (Bonus Outcomes)
+        Console.WriteLine("Symbols Landing Selections");
+        Console.WriteLine("Spaces Left\t1-5\t6-10\t11-15\t16-20\t21-24");
+        foreach (var bo in config.BonusOutcomeDefs)
+        {
+            Console.WriteLine($"{bo.Description}\t{bo.WeightsBySpaceBucket[0]}\t{bo.WeightsBySpaceBucket[1]}\t{bo.WeightsBySpaceBucket[2]}\t{bo.WeightsBySpaceBucket[3]}\t{bo.WeightsBySpaceBucket[4]}");
+        }
+        Console.WriteLine();
+
+        // 16. Bonus Cash Strikes
+        if (config.BonusCashStrikeTypes.Count > 0)
+        {
+            Console.WriteLine("Cash Strikes\tWeight");
+            foreach (var bcs in config.BonusCashStrikeTypes)
+            {
+                Console.WriteLine($"{bcs.SymbolName}\t{bcs.Weight}");
+            }
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("=========================================================================================\n");
+    }
+
+    private static void RunPrizeEvaluation(CashVortexConfig config, int totalRounds)
+    {
+        Console.WriteLine("=========================================================================================");
+        Console.WriteLine("          LOCK & SLINGO™ - CANDIDATE LADDER PRIZES EVALUATION BENCHMARK                  ");
+        Console.WriteLine("=========================================================================================");
+        Console.WriteLine($"Simulating {totalRounds:N0} Lock & Slingo™ bonus rounds to measure candidate prize payouts...\n");
+
+        int workerCount = Environment.ProcessorCount;
+        int roundsPerWorker = totalRounds / workerCount;
+
+        string[] prizeNames = {
+            "Mini Strike 1 (+1.0 ortho)",
+            "Mini Vortex (ortho collect)",
+            "Mega Strike 2 (+2.0 row & col)",
+            "Mega Vortex (row & col collect)",
+            "Mini Jackpot (5x fixed)",
+            "Ultra Strike 5 (+5.0 full grid)",
+            "Mega Jackpot (50x fixed)",
+            "Ultra Vortex (full grid collect)",
+            "Ultra Jackpot (500x fixed)",
+            "Multiplier x2 (2x non-JP coins)",
+            "Multiplier x3 (3x non-JP coins)"
+        };
+
+        long[] prizeAddedWins = new long[11];
+        long[] prizeTotalWins = new long[11];
+        long totalBaseBoardWin = 0;
+        int totalCompletedBonuses = 0;
+        int[] slingoHits = new int[13];
+        long[,] slingoPrizeAddedWins = new long[13, 11];
+        long[,] slingoPrizeTotalWins = new long[13, 11];
+        long[] slingoBaseBoardWins = new long[13];
+
+        var tasks = new Task[workerCount];
+        var workerResults = new (long[] addedWins, long[] totalWins, long baseBoardWin, int count, int[] hits, long[,] sAdded, long[,] sTotal, long[] sBase)[workerCount];
+
+        var sw = Stopwatch.StartNew();
+
+        for (int w = 0; w < workerCount; w++)
+        {
+            int workerIdx = w;
+            int countToRun = (workerIdx == workerCount - 1) ? (totalRounds - workerIdx * roundsPerWorker) : roundsPerWorker;
+
+            tasks[w] = Task.Run(() =>
+            {
+                var engine = new CashVortexSlotEngine(config);
+                var rng = new FastRandom((uint)(Environment.TickCount + workerIdx * 31337 + 17));
+
+                var locAddedWins = new long[11];
+                var locTotalWins = new long[11];
+                long locBaseBoardWin = 0;
+                var locHits = new int[13];
+                var locSAdded = new long[13, 11];
+                var locSTotal = new long[13, 11];
+                var locSBase = new long[13];
+
+                for (int i = 0; i < countToRun; i++)
+                {
+                    var (completedSlingos, baseTotalWin, candidateAdded, candidateTotals) = engine.SimulateBonusForLadderCandidates(rng);
+                    int sIdx = Math.Clamp(completedSlingos, 0, 12);
+                    locHits[sIdx]++;
+
+                    long baseCents = (long)Math.Round(baseTotalWin * 100);
+                    locBaseBoardWin += baseCents;
+                    locSBase[sIdx] += baseCents;
+
+                    for (int p = 0; p < 11; p++)
+                    {
+                        long addCents = (long)Math.Round(candidateAdded[p] * 100);
+                        long totCents = (long)Math.Round(candidateTotals[p] * 100);
+
+                        locAddedWins[p] += addCents;
+                        locTotalWins[p] += totCents;
+                        locSAdded[sIdx, p] += addCents;
+                        locSTotal[sIdx, p] += totCents;
+                    }
+                }
+
+                workerResults[workerIdx] = (locAddedWins, locTotalWins, locBaseBoardWin, countToRun, locHits, locSAdded, locSTotal, locSBase);
+            });
+        }
+
+        Task.WaitAll(tasks);
+        sw.Stop();
+
+        for (int w = 0; w < workerCount; w++)
+        {
+            var res = workerResults[w];
+            totalCompletedBonuses += res.count;
+            totalBaseBoardWin += res.baseBoardWin;
+
+            for (int s = 0; s <= 12; s++)
+            {
+                slingoHits[s] += res.hits[s];
+                slingoBaseBoardWins[s] += res.sBase[s];
+                for (int p = 0; p < 11; p++)
+                {
+                    slingoPrizeAddedWins[s, p] += res.sAdded[s, p];
+                    slingoPrizeTotalWins[s, p] += res.sTotal[s, p];
+                }
+            }
+
+            for (int p = 0; p < 11; p++)
+            {
+                prizeAddedWins[p] += res.addedWins[p];
+                prizeTotalWins[p] += res.totalWins[p];
+            }
+        }
+
+        double avgBaseBoard = (double)totalBaseBoardWin / (totalCompletedBonuses * 100.0);
+        Console.WriteLine($"Simulated {totalCompletedBonuses:N0} bonus rounds in {sw.ElapsedMilliseconds} ms.");
+        Console.WriteLine($"Average Base Board Payout (before prize): {avgBaseBoard:F2}x bet\n");
+
+        var prizeData = new List<(int id, string name, double avgAdded, double avgTotal)>();
+        for (int p = 0; p < 11; p++)
+        {
+            double avgAdd = (double)prizeAddedWins[p] / (totalCompletedBonuses * 100.0);
+            double avgTot = (double)prizeTotalWins[p] / (totalCompletedBonuses * 100.0);
+            prizeData.Add((p, prizeNames[p], avgAdd, avgTot));
+        }
+
+        var sortedPrizes = prizeData.OrderBy(x => x.avgAdded).ToList();
+
+        Console.WriteLine("=========================================================================================");
+        Console.WriteLine("       RANKED 11 CANDIDATE PRIZES (ORDERED LOWEST TO HIGHEST AVERAGE VALUE)             ");
+        Console.WriteLine("=========================================================================================");
+        Console.WriteLine($"{"Rank",-5} | {"Prize Name",-35} | {"Avg Added Value",-16} | {"Avg Total Bonus Win",-20}");
+        Console.WriteLine(new string('-', 85));
+
+        for (int r = 0; r < sortedPrizes.Count; r++)
+        {
+            var p = sortedPrizes[r];
+            Console.WriteLine($"{r + 1,5} | {p.name,-35} | {p.avgAdded,14:F2}x | {p.avgTotal,18:F2}x");
+        }
+
+        Console.WriteLine("\n=========================================================================================");
+        Console.WriteLine("       DETAILED AVERAGE ADDED PAYOUT BY SLINGO LEVEL (0 .. 12 SLINGOS)                   ");
+        Console.WriteLine("=========================================================================================");
+        for (int s = 0; s <= 12; s++)
+        {
+            if (s == 11) continue;
+            int sCount = slingoHits[s];
+            if (sCount == 0) continue;
+            double sChance = (double)sCount / totalCompletedBonuses;
+            double avgSBase = (double)slingoBaseBoardWins[s] / (sCount * 100.0);
+
+            Console.WriteLine($"\n--- Slingo {s,2} Line(s) (Hits: {sCount,6:N0} | {sChance,6:P2} of bonuses | Avg Base Board: {avgSBase:F2}x) ---");
+            for (int r = 0; r < sortedPrizes.Count; r++)
+            {
+                var p = sortedPrizes[r];
+                double sAdd = (double)slingoPrizeAddedWins[s, p.id] / (sCount * 100.0);
+                double sTot = (double)slingoPrizeTotalWins[s, p.id] / (sCount * 100.0);
+                Console.WriteLine($"  #{r + 1,2} {p.name,-34}: Added = {sAdd,6:F2}x | Total Win = {sTot,6:F2}x");
+            }
+        }
+        Console.WriteLine("=========================================================================================\n");
     }
 
     private static void PopulateStatsWorksheet(
@@ -816,6 +1197,9 @@ class Program
         Dictionary<string, int> wheelPrizeHits,
         Dictionary<string, long> wheelPrizeWins,
         int[] lockAndSlingoLadderHits,
+        long[] lockAndSlingoLadderWins,
+        long[] lockAndSlingoLadderBoardWins,
+        long[] lockAndSlingoLadderPrizeWins,
         Dictionary<string, int> jackpotHits,
         Dictionary<string, long> jackpotWins)
     {
@@ -1012,19 +1396,21 @@ class Program
 
         // SECTION 5: LOCK & SLINGO™ LADDER ACHIEVEMENTS
         ws.Cell(r, 1).Value = "5. LOCK & SLINGO™ RESPIN LADDER ACHIEVEMENTS";
-        ws.Range(r, 1, r, 5).Merge().Style.Font.Bold = true;
-        ws.Range(r, 1, r, 5).Style.Font.FontSize = 11;
-        ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        ws.Range(r, 1, r, 7).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 7).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
         r++;
 
         ws.Cell(r, 1).Value = "Slingos Completed";
-        ws.Cell(r, 2).Value = "Hits";
-        ws.Cell(r, 3).Value = "Bonus Round Hit Chance %";
-        ws.Cell(r, 4).Value = "Total Spins Hit Chance %";
-        ws.Cell(r, 5).Value = "Ladder Award Description";
-        ws.Range(r, 1, r, 5).Style.Font.Bold = true;
-        ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
-        ws.Range(r, 1, r, 5).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        ws.Cell(r, 2).Value = "Ladder Award Description";
+        ws.Cell(r, 3).Value = "Hits";
+        ws.Cell(r, 4).Value = "Bonus Hit Chance %";
+        ws.Cell(r, 5).Value = "Avg Base Board (x bet)";
+        ws.Cell(r, 6).Value = "Avg Ladder Prize (x bet)";
+        ws.Cell(r, 7).Value = "Avg Total Bonus Win (x bet)";
+        ws.Range(r, 1, r, 7).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 7).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
         r++;
 
         for (int s = 0; s <= 12; s++)
@@ -1032,7 +1418,6 @@ class Program
             if (s == 11) continue;
             int sHits = lockAndSlingoLadderHits[s];
             double sChance = lockAndSlingoTriggers > 0 ? (double)sHits / lockAndSlingoTriggers : 0;
-            double sChanceSpins = (double)sHits / totalSpins;
 
             var ladderDef = config.SlingoLadderPrizes.FirstOrDefault(p => p.SlingoCount == s);
             string desc = ladderDef?.PrizeString ?? (s == 0 ? "No Lines" : "Standard");
@@ -1040,11 +1425,17 @@ class Program
             else if (s == 8) desc = "Mega Jackpot (50x)";
             else if (s == 4) desc = "Mini Jackpot (5x)";
 
+            double avgBonusWin = sHits > 0 ? (double)lockAndSlingoLadderWins[s] / (sHits * 100.0) : 0;
+            double avgBoardWin = sHits > 0 ? (double)lockAndSlingoLadderBoardWins[s] / (sHits * 100.0) : 0;
+            double avgPrizeWin = sHits > 0 ? (double)lockAndSlingoLadderPrizeWins[s] / (sHits * 100.0) : 0;
+
             ws.Cell(r, 1).Value = $"Slingo {s}";
-            ws.Cell(r, 2).Value = sHits;
-            ws.Cell(r, 3).Value = $"{sChance:P2}";
-            ws.Cell(r, 4).Value = $"{sChanceSpins:P4}";
-            ws.Cell(r, 5).Value = desc;
+            ws.Cell(r, 2).Value = desc;
+            ws.Cell(r, 3).Value = sHits;
+            ws.Cell(r, 4).Value = $"{sChance:P2}";
+            ws.Cell(r, 5).Value = $"{avgBoardWin:F2}";
+            ws.Cell(r, 6).Value = $"{avgPrizeWin:F2}";
+            ws.Cell(r, 7).Value = $"{avgBonusWin:F2}";
             r++;
         }
         r += 2;

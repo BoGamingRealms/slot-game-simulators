@@ -54,6 +54,8 @@ public class TriggeredPotBonus
     public int CompletedSlingos { get; set; }
     public double CashValuesSum { get; set; }
     public double LadderPrize { get; set; }
+    public long BaseBoardWinCents { get; set; }
+    public long LadderPrizeWinCents { get; set; }
     public bool MinWinApplied { get; set; }
     public Dictionary<int, long> ColossalSymbolWins { get; set; } = new();
     public Dictionary<int, int> ColossalSymbolHits { get; set; } = new();

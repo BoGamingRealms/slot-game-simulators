@@ -158,6 +158,12 @@ public class CashVortexExcelLoader
                 inBonusSection = true;
                 continue;
             }
+            else if (checkStr.StartsWith("Cash Vortex", StringComparison.OrdinalIgnoreCase) ||
+                     checkStr.StartsWith("Vortex", StringComparison.OrdinalIgnoreCase))
+            {
+                currentSection = "Cash Vortexes";
+                continue;
+            }
             else if (checkStr.StartsWith("Jackpot Coins", StringComparison.OrdinalIgnoreCase))
             {
                 currentSection = inBonusSection ? "Bonus Jackpot Coins" : "Jackpot Coins";
@@ -243,6 +249,21 @@ public class CashVortexExcelLoader
                             SymbolName = col0,
                             Weight = symWeight
                         });
+                    }
+                    break;
+
+                case "Cash Vortexes":
+                    if (TryParseDouble(row, 1, out double vBasePay))
+                    {
+                        config.CashVortexBasePays.Add(new CashVortexBasePayDef
+                        {
+                            VortexName = col0,
+                            BaseMultiplier = vBasePay
+                        });
+
+                        if (col0.Contains("Mini", StringComparison.OrdinalIgnoreCase)) config.MiniVortexBasePay = vBasePay;
+                        else if (col0.Contains("Mega", StringComparison.OrdinalIgnoreCase)) config.MegaVortexBasePay = vBasePay;
+                        else if (col0.Contains("Ultra", StringComparison.OrdinalIgnoreCase)) config.UltraVortexBasePay = vBasePay;
                     }
                     break;
 
@@ -456,22 +477,86 @@ public class CashVortexExcelLoader
             return ladderPrize;
         }
 
-        if (prizeStr.StartsWith("x", StringComparison.OrdinalIgnoreCase))
-        {
-            ladderPrize.Type = WheelPrizeType.Multiplier;
-            if (double.TryParse(prizeStr.Substring(1), out double m)) ladderPrize.ParameterValue = m;
-        }
-        else if (prizeStr.Contains("Jackpot", StringComparison.OrdinalIgnoreCase))
+        string cleanStr = prizeStr.Trim();
+
+        // 1. Jackpots
+        if (cleanStr.Contains("Jackpot", StringComparison.OrdinalIgnoreCase))
         {
             ladderPrize.Type = WheelPrizeType.Jackpot;
-            if (prizeStr.Contains("Mini", StringComparison.OrdinalIgnoreCase)) ladderPrize.JackpotType = "Mini";
-            else if (prizeStr.Contains("Mega", StringComparison.OrdinalIgnoreCase)) ladderPrize.JackpotType = "Mega";
-            else if (prizeStr.Contains("Ultra", StringComparison.OrdinalIgnoreCase)) ladderPrize.JackpotType = "Ultra";
+            if (cleanStr.Contains("Mini", StringComparison.OrdinalIgnoreCase)) ladderPrize.JackpotType = "Mini";
+            else if (cleanStr.Contains("Mega", StringComparison.OrdinalIgnoreCase)) ladderPrize.JackpotType = "Mega";
+            else if (cleanStr.Contains("Ultra", StringComparison.OrdinalIgnoreCase)) ladderPrize.JackpotType = "Ultra";
+            return ladderPrize;
         }
-        else if (double.TryParse(prizeStr, out double strikeVal))
+
+        // 2. Vortexes
+        if (cleanStr.Contains("Vortex", StringComparison.OrdinalIgnoreCase))
+        {
+            if (cleanStr.Contains("Mini", StringComparison.OrdinalIgnoreCase))
+            {
+                ladderPrize.Type = WheelPrizeType.MiniVortex;
+            }
+            else if (cleanStr.Contains("Mega", StringComparison.OrdinalIgnoreCase))
+            {
+                ladderPrize.Type = WheelPrizeType.MegaVortex;
+            }
+            else
+            {
+                ladderPrize.Type = WheelPrizeType.UltraVortex;
+            }
+            return ladderPrize;
+        }
+
+        // 3. Strikes (Mini Strike, Mega Strike, Ultra Strike, handles "Strke" as well)
+        if (cleanStr.Contains("Strike", StringComparison.OrdinalIgnoreCase) || cleanStr.Contains("Strke", StringComparison.OrdinalIgnoreCase))
+        {
+            double param = 1.0;
+            var numMatch = System.Text.RegularExpressions.Regex.Match(cleanStr, @"\d+(\.\d+)?");
+            if (numMatch.Success && double.TryParse(numMatch.Value, out double parsedVal))
+            {
+                param = parsedVal;
+            }
+
+            if (cleanStr.Contains("Mini", StringComparison.OrdinalIgnoreCase))
+            {
+                ladderPrize.Type = WheelPrizeType.MiniStrike;
+                ladderPrize.ParameterValue = param;
+            }
+            else if (cleanStr.Contains("Mega", StringComparison.OrdinalIgnoreCase))
+            {
+                ladderPrize.Type = WheelPrizeType.MegaStrike;
+                ladderPrize.ParameterValue = (param == 1.0 && !numMatch.Success) ? 2.0 : param;
+            }
+            else
+            {
+                ladderPrize.Type = WheelPrizeType.UltraStrike;
+                ladderPrize.ParameterValue = (param == 1.0 && !numMatch.Success) ? 3.0 : param;
+            }
+            return ladderPrize;
+        }
+
+        // 4. Multipliers (e.g. "x2", "x3", "Multiplier x2", "Multiplier x3")
+        if (cleanStr.StartsWith("x", StringComparison.OrdinalIgnoreCase) || cleanStr.Contains("Multiplier", StringComparison.OrdinalIgnoreCase))
+        {
+            ladderPrize.Type = WheelPrizeType.Multiplier;
+            var numMatch = System.Text.RegularExpressions.Regex.Match(cleanStr, @"\d+(\.\d+)?");
+            if (numMatch.Success && double.TryParse(numMatch.Value, out double mult))
+            {
+                ladderPrize.ParameterValue = mult;
+            }
+            else
+            {
+                ladderPrize.ParameterValue = 2.0;
+            }
+            return ladderPrize;
+        }
+
+        // 5. Numeric fallback (treated as UltraStrike value)
+        if (double.TryParse(cleanStr, out double strikeVal))
         {
             ladderPrize.Type = WheelPrizeType.UltraStrike;
             ladderPrize.ParameterValue = strikeVal;
+            return ladderPrize;
         }
 
         return ladderPrize;
@@ -661,6 +746,16 @@ public class CashVortexExcelLoader
             {
                 config.CashCoinValues.Add(new CashValueDef { Multiplier = coinVals[i], Weight = coinW[i] });
             }
+        }
+
+        if (config.CashVortexBasePays.Count == 0)
+        {
+            config.CashVortexBasePays.Add(new CashVortexBasePayDef { VortexName = "Mini Vortex", BaseMultiplier = 1.0 });
+            config.CashVortexBasePays.Add(new CashVortexBasePayDef { VortexName = "Mega Vortex", BaseMultiplier = 2.0 });
+            config.CashVortexBasePays.Add(new CashVortexBasePayDef { VortexName = "Ultra Vortex", BaseMultiplier = 5.0 });
+            config.MiniVortexBasePay = 1.0;
+            config.MegaVortexBasePay = 2.0;
+            config.UltraVortexBasePay = 5.0;
         }
 
         if (config.MiniWheelPrizes.Count == 0)
