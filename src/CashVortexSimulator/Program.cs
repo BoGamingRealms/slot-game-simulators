@@ -201,6 +201,7 @@ class Program
         bool trackFullStats = true;
         bool useBalanced = false;
         int totalSpinsArg = 1_000_000;
+        string? explicitTargetConfig = null;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -220,6 +221,10 @@ class Program
             else if ((arg.Equals("--spins", StringComparison.OrdinalIgnoreCase) || arg.Equals("-s", StringComparison.OrdinalIgnoreCase)) && i + 1 < args.Length)
             {
                 if (int.TryParse(args[++i], out int s)) totalSpinsArg = s;
+            }
+            else if ((arg.Equals("--target", StringComparison.OrdinalIgnoreCase) || arg.Equals("--excel", StringComparison.OrdinalIgnoreCase) || arg.Equals("--config", StringComparison.OrdinalIgnoreCase)) && i + 1 < args.Length)
+            {
+                explicitTargetConfig = args[++i];
             }
             else if (arg.Equals("--url", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
             {
@@ -541,47 +546,57 @@ class Program
                 Console.WriteLine($"  - {jp.JackpotName,-6} Jackpot ({jp.Multiplier}x): Hits = {hits,6:N0} | RTP = {jpRtp,8:P4}");
             }
 
+            int[] strikeTotalLandings = { totalStrikeHits, miniStrikeHits, megaStrikeHits, ultraStrikeHits };
+            int[] strikeZeroHits = { totalStrikeZeroHits, miniStrikeZeroHits, megaStrikeZeroHits, ultraStrikeZeroHits };
+            int[] vortexTotalLandings = { totalVortexHits, miniVortexHits, megaVortexHits, ultraVortexHits };
+            int[] vortexZeroHits = { totalVortexZeroHits, miniVortexZeroHits, megaVortexZeroHits, ultraVortexZeroHits };
+
             // Write results Excel
             Console.WriteLine($"\nWriting simulation results to: {resultsPath}");
             using var workbook = new XLWorkbook();
-            var ws = workbook.Worksheets.Add("Simulation Results");
+            
+            // Add primary single consolidated "Stats" worksheet
+            var wsStats = workbook.Worksheets.Add("Stats");
+            PopulateStatsWorksheet(
+                wsStats,
+                config,
+                totalSpins,
+                totalRtp,
+                lineWinRtp,
+                centerWheelRtp,
+                xWheelRtp,
+                lockAndSlingoRtp,
+                hitFreq,
+                totalSlingoLines,
+                centerWheelTriggers,
+                lockAndSlingoTriggers,
+                avgLnsWin,
+                avgLnsSpins,
+                avgLnsSlingos,
+                lockAndSlingoFullHouses,
+                jackpotCoinHits,
+                miniVortexHits,
+                megaVortexHits,
+                ultraVortexHits,
+                miniStrikeHits,
+                megaStrikeHits,
+                ultraStrikeHits,
+                xWheelHits,
+                strikeZeroHits,
+                strikeTotalLandings,
+                vortexZeroHits,
+                vortexTotalLandings,
+                wheelReachHits,
+                wheelRtpWin,
+                centerWheelPrizeHits,
+                centerWheelPrizeWins,
+                wheelPrizeHits,
+                wheelPrizeWins,
+                lockAndSlingoLadderHits,
+                jackpotHits,
+                jackpotWins);
 
-            ws.Cell(1, 1).Value = "Metric";
-            ws.Cell(1, 2).Value = "Value";
-            ws.Row(1).Style.Font.Bold = true;
-
-            int rowIdx = 2;
-            ws.Cell(rowIdx, 1).Value = "Game Name"; ws.Cell(rowIdx, 2).Value = config.GameName; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Total Spins"; ws.Cell(rowIdx, 2).Value = totalSpins; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Total RTP"; ws.Cell(rowIdx, 2).Value = $"{totalRtp:P2}"; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Line Win RTP"; ws.Cell(rowIdx, 2).Value = $"{lineWinRtp:P2}"; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Center Wild Wheel Bonus RTP"; ws.Cell(rowIdx, 2).Value = $"{centerWheelRtp:P2}"; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "X-Wheel Direct RTP"; ws.Cell(rowIdx, 2).Value = $"{xWheelRtp:P2}"; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Lock & Slingo™ Bonus RTP"; ws.Cell(rowIdx, 2).Value = $"{lockAndSlingoRtp:P2}"; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Hit Frequency"; ws.Cell(rowIdx, 2).Value = $"{hitFreq:P2}"; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Slingo Lines Completed"; ws.Cell(rowIdx, 2).Value = totalSlingoLines; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Center Wheel Triggers"; ws.Cell(rowIdx, 2).Value = centerWheelTriggers; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Lock & Slingo Triggers"; ws.Cell(rowIdx, 2).Value = lockAndSlingoTriggers; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Average Bonus Win (x bet)"; ws.Cell(rowIdx, 2).Value = $"{avgLnsWin:F2}"; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Full House Hits"; ws.Cell(rowIdx, 2).Value = lockAndSlingoFullHouses; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Jackpot Coin Hits"; ws.Cell(rowIdx, 2).Value = jackpotCoinHits; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Mini Vortex Hits"; ws.Cell(rowIdx, 2).Value = miniVortexHits; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Mega Vortex Hits"; ws.Cell(rowIdx, 2).Value = megaVortexHits; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Ultra Vortex Hits"; ws.Cell(rowIdx, 2).Value = ultraVortexHits; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Mini Strike Hits"; ws.Cell(rowIdx, 2).Value = miniStrikeHits; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Mega Strike Hits"; ws.Cell(rowIdx, 2).Value = megaStrikeHits; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "Ultra Strike Hits"; ws.Cell(rowIdx, 2).Value = ultraStrikeHits; rowIdx++;
-            ws.Cell(rowIdx, 1).Value = "X Wheel Triggers"; ws.Cell(rowIdx, 2).Value = xWheelHits; rowIdx++;
-
-            for (int wL = 1; wL <= 3; wL++)
-            {
-                ws.Cell(rowIdx, 1).Value = $"Wheel {wL} Reached Hits"; ws.Cell(rowIdx, 2).Value = wheelReachHits[wL]; rowIdx++;
-                ws.Cell(rowIdx, 1).Value = $"Wheel {wL} Direct RTP"; ws.Cell(rowIdx, 2).Value = $"{((double)wheelRtpWin[wL] / (totalSpins * 100.0)):P4}"; rowIdx++;
-            }
-
-            ws.Columns().AdjustToContents();
-
-            // Add Center Wheel Worksheet
+            // Add detailed worksheets
             var wsCenter = workbook.Worksheets.Add("Center Wheel Details");
             wsCenter.Cell(1, 1).Value = "Prize";
             wsCenter.Cell(1, 2).Value = "Hits";
@@ -610,7 +625,6 @@ class Program
             }
             wsCenter.Columns().AdjustToContents();
 
-            // Add X Wheel Details Worksheet
             var wsWheel = workbook.Worksheets.Add("X Wheel Details");
             wsWheel.Cell(1, 1).Value = "Wheel";
             wsWheel.Cell(1, 2).Value = "Prize";
@@ -650,7 +664,6 @@ class Program
             }
             wsWheel.Columns().AdjustToContents();
 
-            // Add Lock & Slingo Details Worksheet
             var wsLns = workbook.Worksheets.Add("Lock & Slingo Details");
             wsLns.Cell(1, 1).Value = "Slingo Level";
             wsLns.Cell(1, 2).Value = "Hits";
@@ -676,6 +689,85 @@ class Program
 
             workbook.SaveAs(resultsPath);
             Console.WriteLine("Results successfully written to Excel workbook!");
+
+            // If a local game config file exists or was specified, update its "Stats" tab directly
+            string? localConfigToUpdate = explicitTargetConfig;
+            if (string.IsNullOrEmpty(localConfigToUpdate))
+            {
+                if (File.Exists(configSource) && (configSource.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)))
+                {
+                    localConfigToUpdate = configSource;
+                }
+                else if (File.Exists(localDefault))
+                {
+                    localConfigToUpdate = localDefault;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(localConfigToUpdate) && File.Exists(localConfigToUpdate))
+            {
+                try
+                {
+                    Console.WriteLine($"\nUpdating 'Stats' tab in game config file: {localConfigToUpdate}...");
+                    using var configWorkbook = new XLWorkbook(localConfigToUpdate);
+                    var configStatsWs = configWorkbook.Worksheets.FirstOrDefault(w => w.Name.Equals("Stats", StringComparison.OrdinalIgnoreCase));
+                    if (configStatsWs == null)
+                    {
+                        configStatsWs = configWorkbook.Worksheets.Add("Stats");
+                    }
+                    else
+                    {
+                        configStatsWs.Clear();
+                    }
+
+                    PopulateStatsWorksheet(
+                        configStatsWs,
+                        config,
+                        totalSpins,
+                        totalRtp,
+                        lineWinRtp,
+                        centerWheelRtp,
+                        xWheelRtp,
+                        lockAndSlingoRtp,
+                        hitFreq,
+                        totalSlingoLines,
+                        centerWheelTriggers,
+                        lockAndSlingoTriggers,
+                        avgLnsWin,
+                        avgLnsSpins,
+                        avgLnsSlingos,
+                        lockAndSlingoFullHouses,
+                        jackpotCoinHits,
+                        miniVortexHits,
+                        megaVortexHits,
+                        ultraVortexHits,
+                        miniStrikeHits,
+                        megaStrikeHits,
+                        ultraStrikeHits,
+                        xWheelHits,
+                        strikeZeroHits,
+                        strikeTotalLandings,
+                        vortexZeroHits,
+                        vortexTotalLandings,
+                        wheelReachHits,
+                        wheelRtpWin,
+                        centerWheelPrizeHits,
+                        centerWheelPrizeWins,
+                        wheelPrizeHits,
+                        wheelPrizeWins,
+                        lockAndSlingoLadderHits,
+                        jackpotHits,
+                        jackpotWins);
+
+                    configWorkbook.Save();
+                    Console.WriteLine($"[SUCCESS] Game config 'Stats' tab successfully updated!");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[NOTE] Could not update 'Stats' tab in {localConfigToUpdate}: {ex.Message}");
+                }
+            }
+
             Console.WriteLine("=========================================================================================");
         }
         catch (Exception ex)
@@ -684,5 +776,310 @@ class Program
             Console.WriteLine(ex.StackTrace);
             Console.WriteLine("=========================================================================================");
         }
+    }
+
+    private static void PopulateStatsWorksheet(
+        IXLWorksheet ws,
+        CashVortexConfig config,
+        int totalSpins,
+        double totalRtp,
+        double lineWinRtp,
+        double centerWheelRtp,
+        double xWheelRtp,
+        double lockAndSlingoRtp,
+        double hitFreq,
+        int totalSlingoLines,
+        int centerWheelTriggers,
+        int lockAndSlingoTriggers,
+        double avgLnsWin,
+        double avgBonusSpins,
+        double avgBonusSlingos,
+        int lockAndSlingoFullHouses,
+        int jackpotCoinHits,
+        int miniVortexHits,
+        int megaVortexHits,
+        int ultraVortexHits,
+        int miniStrikeHits,
+        int megaStrikeHits,
+        int ultraStrikeHits,
+        int xWheelHits,
+        int[] strikeZeroHits,
+        int[] strikeTotalLandings,
+        int[] vortexZeroHits,
+        int[] vortexTotalLandings,
+        int[] wheelReachHits,
+        long[] wheelRtpWin,
+        Dictionary<string, int> centerWheelPrizeHits,
+        Dictionary<string, long> centerWheelPrizeWins,
+        Dictionary<string, int> wheelPrizeHits,
+        Dictionary<string, long> wheelPrizeWins,
+        int[] lockAndSlingoLadderHits,
+        Dictionary<string, int> jackpotHits,
+        Dictionary<string, long> jackpotWins)
+    {
+        // Title Banner
+        ws.Cell("A1").Value = "CASH VORTEX: TRIPLE POWER – SIMULATION & MATHEMATICAL STATS DASHBOARD";
+        ws.Range("A1:G1").Merge();
+        ws.Range("A1:G1").Style.Font.Bold = true;
+        ws.Range("A1:G1").Style.Font.FontSize = 14;
+        ws.Range("A1:G1").Style.Font.FontColor = XLColor.White;
+        ws.Range("A1:G1").Style.Fill.BackgroundColor = XLColor.FromArgb(24, 43, 73);
+        ws.Range("A1:G1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+        ws.Cell("A2").Value = $"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss} | Simulated Spins: {totalSpins:N0} | Total Game RTP: {totalRtp:P2}";
+        ws.Range("A2:G2").Merge();
+        ws.Range("A2:G2").Style.Font.Italic = true;
+        ws.Range("A2:G2").Style.Font.FontSize = 10;
+        ws.Range("A2:G2").Style.Font.FontColor = XLColor.FromArgb(100, 110, 120);
+
+        int r = 4;
+
+        // SECTION 1: EXECUTIVE SUMMARY & RTP BREAKDOWN
+        ws.Cell(r, 1).Value = "1. EXECUTIVE SUMMARY & RTP BREAKDOWN";
+        ws.Range(r, 1, r, 5).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 5).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        r++;
+
+        ws.Cell(r, 1).Value = "Metric / Component";
+        ws.Cell(r, 2).Value = "Value / Metric Count";
+        ws.Cell(r, 3).Value = "Hit Frequency / Trigger Rate";
+        ws.Cell(r, 4).Value = "Spin Chance %";
+        ws.Cell(r, 5).Value = "Contribution RTP %";
+        ws.Range(r, 1, r, 5).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 5).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        r++;
+
+        void AddSummaryRow(string metric, object val, string hitFreqStr, double spinChance, double rtpVal, bool highlight = false)
+        {
+            ws.Cell(r, 1).Value = metric;
+            if (val is double d) ws.Cell(r, 2).Value = $"{d:F2}";
+            else if (val is int i) ws.Cell(r, 2).Value = i;
+            else if (val is long l) ws.Cell(r, 2).Value = l;
+            else ws.Cell(r, 2).Value = val.ToString();
+
+            ws.Cell(r, 3).Value = hitFreqStr;
+            ws.Cell(r, 4).Value = spinChance > 0 ? $"{spinChance:P2}" : "-";
+            ws.Cell(r, 5).Value = rtpVal > 0 ? $"{rtpVal:P2}" : "-";
+
+            if (highlight)
+            {
+                ws.Range(r, 1, r, 5).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = XLColor.FromArgb(232, 245, 233);
+            }
+            r++;
+        }
+
+        AddSummaryRow("Total Game RTP", $"{totalRtp:P2}", "-", 1.0, totalRtp, true);
+        AddSummaryRow("Base Game Slingo Lines Payout RTP", $"{lineWinRtp:P2}", $"1 in {totalSpins / (double)Math.Max(1, totalSlingoLines):F2} spins", (double)totalSlingoLines / totalSpins, lineWinRtp);
+        AddSummaryRow("Center Wild Wheel Bonus RTP", $"{centerWheelRtp:P2}", $"1 in {totalSpins / (double)Math.Max(1, centerWheelTriggers):F2} spins", (double)centerWheelTriggers / totalSpins, centerWheelRtp);
+        AddSummaryRow("Reel-Top X-Wheel Feature Direct RTP", $"{xWheelRtp:P2}", $"1 in {totalSpins / (double)Math.Max(1, xWheelHits):F2} spins", (double)xWheelHits / totalSpins, xWheelRtp);
+        AddSummaryRow("Lock & Slingo™ Hold & Respin Bonus RTP", $"{lockAndSlingoRtp:P2}", $"1 in {totalSpins / (double)Math.Max(1, lockAndSlingoTriggers):F2} spins", (double)lockAndSlingoTriggers / totalSpins, lockAndSlingoRtp);
+        AddSummaryRow("Overall Hit Frequency (Any Win)", $"{hitFreq:P2}", $"1 in {1.0 / Math.Max(0.0001, hitFreq):F2} spins", hitFreq, 0);
+        AddSummaryRow("Total Slingo Lines Completed", totalSlingoLines, $"1 in {totalSpins / (double)Math.Max(1, totalSlingoLines):F2} spins", (double)totalSlingoLines / totalSpins, 0);
+        AddSummaryRow("Center Wild Wheel Triggers", centerWheelTriggers, $"1 in {totalSpins / (double)Math.Max(1, centerWheelTriggers):F2} spins", (double)centerWheelTriggers / totalSpins, 0);
+        AddSummaryRow("Lock & Slingo™ Bonus Triggers", lockAndSlingoTriggers, $"1 in {totalSpins / (double)Math.Max(1, lockAndSlingoTriggers):F2} spins", (double)lockAndSlingoTriggers / totalSpins, 0);
+        AddSummaryRow("Average Bonus Win (x bet)", $"{avgLnsWin:F2}x", "-", 0, 0);
+        AddSummaryRow("Average Spins per Bonus Round", $"{avgBonusSpins:F2}", "-", 0, 0);
+        AddSummaryRow("Average Slingo Lines per Bonus Round", $"{avgBonusSlingos:F2}", "-", 0, 0);
+        AddSummaryRow("Full House (25 Cells / 12 Slingos) Hits", lockAndSlingoFullHouses, $"{((double)lockAndSlingoFullHouses / Math.Max(1, lockAndSlingoTriggers)):P2} of bonuses", (double)lockAndSlingoFullHouses / totalSpins, 0);
+        r += 2;
+
+        // SECTION 2: SPECIAL SYMBOL TARGET EFFICIENCY & ZERO-EFFECT ANALYSIS
+        ws.Cell(r, 1).Value = "2. SPECIAL SYMBOL TARGET EFFICIENCY & ZERO-EFFECT ANALYSIS";
+        ws.Range(r, 1, r, 6).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 6).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        r++;
+
+        ws.Cell(r, 1).Value = "Symbol Category";
+        ws.Cell(r, 2).Value = "Total Landings";
+        ws.Cell(r, 3).Value = "0-Effect Landings";
+        ws.Cell(r, 4).Value = "0-Effect %";
+        ws.Cell(r, 5).Value = "Spin Chance %";
+        ws.Cell(r, 6).Value = "1 in N Spins";
+        ws.Range(r, 1, r, 6).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 6).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        r++;
+
+        void AddSymbolEffRow(string symName, int totalL, int zeroL)
+        {
+            ws.Cell(r, 1).Value = symName;
+            ws.Cell(r, 2).Value = totalL;
+            ws.Cell(r, 3).Value = zeroL;
+            ws.Cell(r, 4).Value = totalL > 0 ? $"{((double)zeroL / totalL):P2}" : "0.00%";
+            ws.Cell(r, 5).Value = $"{((double)totalL / totalSpins):P4}";
+            ws.Cell(r, 6).Value = totalL > 0 ? $"1 in {totalSpins / (double)totalL:F1}" : "-";
+            r++;
+        }
+
+        AddSymbolEffRow("Cash Strikes (All Categories)", strikeTotalLandings[0], strikeZeroHits[0]);
+        AddSymbolEffRow("  * Mini Strike (Ortho Range)", strikeTotalLandings[1], strikeZeroHits[1]);
+        AddSymbolEffRow("  * Mega Strike (Row & Col Range)", strikeTotalLandings[2], strikeZeroHits[2]);
+        AddSymbolEffRow("  * Ultra Strike (Full Grid)", strikeTotalLandings[3], strikeZeroHits[3]);
+        AddSymbolEffRow("Cash Vortexes (All Categories)", vortexTotalLandings[0], vortexZeroHits[0]);
+        AddSymbolEffRow("  * Mini Vortex (Ortho Range)", vortexTotalLandings[1], vortexZeroHits[1]);
+        AddSymbolEffRow("  * Mega Vortex (Row & Col Range)", vortexTotalLandings[2], vortexZeroHits[2]);
+        AddSymbolEffRow("  * Ultra Vortex (Full Grid)", vortexTotalLandings[3], vortexZeroHits[3]);
+        r += 2;
+
+        // SECTION 3: CENTER WILD WHEEL BONUS PRIZE BREAKDOWN
+        ws.Cell(r, 1).Value = "3. CENTER WILD WHEEL BONUS PRIZE BREAKDOWN";
+        ws.Range(r, 1, r, 6).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 6).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        r++;
+
+        ws.Cell(r, 1).Value = "Wheel Prize";
+        ws.Cell(r, 2).Value = "Hits";
+        ws.Cell(r, 3).Value = "Wheel Hit Chance %";
+        ws.Cell(r, 4).Value = "Total Spins Hit Chance %";
+        ws.Cell(r, 5).Value = "Direct Win Amount";
+        ws.Cell(r, 6).Value = "Direct RTP %";
+        ws.Range(r, 1, r, 6).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 6).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        r++;
+
+        foreach (var prize in config.CenterWheelPrizes)
+        {
+            int hits = centerWheelPrizeHits.GetValueOrDefault(prize.PrizeString);
+            long win = centerWheelPrizeWins.GetValueOrDefault(prize.PrizeString);
+            double wheelChance = centerWheelTriggers > 0 ? (double)hits / centerWheelTriggers : 0;
+            double spinChance = (double)hits / totalSpins;
+            double prizeRtp = (double)win / (totalSpins * 100.0);
+
+            ws.Cell(r, 1).Value = prize.PrizeString;
+            ws.Cell(r, 2).Value = hits;
+            ws.Cell(r, 3).Value = $"{wheelChance:P2}";
+            ws.Cell(r, 4).Value = $"{spinChance:P4}";
+            ws.Cell(r, 5).Value = win;
+            ws.Cell(r, 6).Value = $"{prizeRtp:P4}";
+            r++;
+        }
+        r += 2;
+
+        // SECTION 4: REEL-TOP X-WHEEL DETAILED BREAKDOWN
+        ws.Cell(r, 1).Value = "4. REEL-TOP X-WHEEL FEATURE DETAILED BREAKDOWN";
+        ws.Range(r, 1, r, 7).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 7).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        r++;
+
+        ws.Cell(r, 1).Value = "Wheel Tier";
+        ws.Cell(r, 2).Value = "Prize String";
+        ws.Cell(r, 3).Value = "Hits";
+        ws.Cell(r, 4).Value = "Wheel Hit Chance %";
+        ws.Cell(r, 5).Value = "Total Spins Hit Chance %";
+        ws.Cell(r, 6).Value = "Direct Win Amount";
+        ws.Cell(r, 7).Value = "Direct RTP %";
+        ws.Range(r, 1, r, 7).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 7).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        r++;
+
+        for (int wL = 1; wL <= 3; wL++)
+        {
+            string wTag = $"W{wL}";
+            string wTitle = wL == 1 ? "Wheel 1 (Mini)" : (wL == 2 ? "Wheel 2 (Mega)" : "Wheel 3 (Ultra)");
+            int wheelTotalSpins = wheelReachHits[wL];
+            var prizeList = wL == 1 ? config.MiniWheelPrizes : (wL == 2 ? config.MegaWheelPrizes : config.UltraWheelPrizes);
+
+            foreach (var prizeDef in prizeList)
+            {
+                string pKey = $"{wTag}:{prizeDef.PrizeString}";
+                int hits = wheelPrizeHits.GetValueOrDefault(pKey);
+                long win = wheelPrizeWins.GetValueOrDefault(pKey);
+                double hitChanceWheel = wheelTotalSpins > 0 ? (double)hits / wheelTotalSpins : 0;
+                double hitChanceSpins = (double)hits / totalSpins;
+                double prizeRtp = (double)win / (totalSpins * 100.0);
+
+                ws.Cell(r, 1).Value = wTitle;
+                ws.Cell(r, 2).Value = prizeDef.PrizeString;
+                ws.Cell(r, 3).Value = hits;
+                ws.Cell(r, 4).Value = $"{hitChanceWheel:P2}";
+                ws.Cell(r, 5).Value = $"{hitChanceSpins:P4}";
+                ws.Cell(r, 6).Value = win;
+                ws.Cell(r, 7).Value = $"{prizeRtp:P4}";
+                r++;
+            }
+        }
+        r += 2;
+
+        // SECTION 5: LOCK & SLINGO™ LADDER ACHIEVEMENTS
+        ws.Cell(r, 1).Value = "5. LOCK & SLINGO™ RESPIN LADDER ACHIEVEMENTS";
+        ws.Range(r, 1, r, 5).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 5).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        r++;
+
+        ws.Cell(r, 1).Value = "Slingos Completed";
+        ws.Cell(r, 2).Value = "Hits";
+        ws.Cell(r, 3).Value = "Bonus Round Hit Chance %";
+        ws.Cell(r, 4).Value = "Total Spins Hit Chance %";
+        ws.Cell(r, 5).Value = "Ladder Award Description";
+        ws.Range(r, 1, r, 5).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 5).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        r++;
+
+        for (int s = 0; s <= 12; s++)
+        {
+            if (s == 11) continue;
+            int sHits = lockAndSlingoLadderHits[s];
+            double sChance = lockAndSlingoTriggers > 0 ? (double)sHits / lockAndSlingoTriggers : 0;
+            double sChanceSpins = (double)sHits / totalSpins;
+
+            var ladderDef = config.SlingoLadderPrizes.FirstOrDefault(p => p.SlingoCount == s);
+            string desc = ladderDef?.PrizeString ?? (s == 0 ? "No Lines" : "Standard");
+            if (s == 12) desc = "FULL HOUSE (Ultra Jackpot 500x)";
+            else if (s == 8) desc = "Mega Jackpot (50x)";
+            else if (s == 4) desc = "Mini Jackpot (5x)";
+
+            ws.Cell(r, 1).Value = $"Slingo {s}";
+            ws.Cell(r, 2).Value = sHits;
+            ws.Cell(r, 3).Value = $"{sChance:P2}";
+            ws.Cell(r, 4).Value = $"{sChanceSpins:P4}";
+            ws.Cell(r, 5).Value = desc;
+            r++;
+        }
+        r += 2;
+
+        // SECTION 6: JACKPOT SYSTEM BREAKDOWN
+        ws.Cell(r, 1).Value = "6. JACKPOT SYSTEM BREAKDOWN";
+        ws.Range(r, 1, r, 6).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 6).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        r++;
+
+        ws.Cell(r, 1).Value = "Jackpot Tier";
+        ws.Cell(r, 2).Value = "Multiplier";
+        ws.Cell(r, 3).Value = "Total Hits";
+        ws.Cell(r, 4).Value = "Total Win Amount";
+        ws.Cell(r, 5).Value = "Contribution RTP %";
+        ws.Cell(r, 6).Value = "1 in N Spins";
+        ws.Range(r, 1, r, 6).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 6).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        r++;
+
+        foreach (var jp in config.JackpotCoins)
+        {
+            int hits = jackpotHits.GetValueOrDefault(jp.JackpotName);
+            long win = jackpotWins.GetValueOrDefault(jp.JackpotName);
+            double jpRtp = (double)win / (totalSpins * 100.0);
+
+            ws.Cell(r, 1).Value = jp.JackpotName;
+            ws.Cell(r, 2).Value = $"{jp.Multiplier}x";
+            ws.Cell(r, 3).Value = hits;
+            ws.Cell(r, 4).Value = win;
+            ws.Cell(r, 5).Value = $"{jpRtp:P4}";
+            ws.Cell(r, 6).Value = hits > 0 ? $"1 in {totalSpins / (double)hits:F1}" : "-";
+            r++;
+        }
+
+        ws.Columns().AdjustToContents();
     }
 }
