@@ -1173,6 +1173,12 @@ public class CashVortexSlotEngine : ISlotEngine
                     spinResult.TotalWin += featureWinCents;
                     break;
 
+                case WheelPrizeType.InstantCash:
+                    double cashMult = prize.ParameterValue > 0 ? prize.ParameterValue : 1.0;
+                    featureWinCents = (long)Math.Round(cashMult * 100);
+                    spinResult.TotalWin += featureWinCents;
+                    break;
+
                 case WheelPrizeType.LockAndSlingo:
                     PlayLockAndSlingoBonus(rng, spinResult);
                     break;

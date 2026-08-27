@@ -199,6 +199,8 @@ class Program
             : "CashVortexTriplePower95_Results.xlsx";
 
         bool trackFullStats = true;
+        bool useBalanced = false;
+        int totalSpinsArg = 1_000_000;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -210,6 +212,14 @@ class Program
             else if (arg.Equals("--full", StringComparison.OrdinalIgnoreCase))
             {
                 trackFullStats = true;
+            }
+            else if (arg.Equals("--balanced", StringComparison.OrdinalIgnoreCase) || arg.Equals("--955", StringComparison.OrdinalIgnoreCase))
+            {
+                useBalanced = true;
+            }
+            else if ((arg.Equals("--spins", StringComparison.OrdinalIgnoreCase) || arg.Equals("-s", StringComparison.OrdinalIgnoreCase)) && i + 1 < args.Length)
+            {
+                if (int.TryParse(args[++i], out int s)) totalSpinsArg = s;
             }
             else if (arg.Equals("--url", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
             {
@@ -223,16 +233,22 @@ class Program
 
         try
         {
-            if (SlotFramework.Utilities.GoogleSheetDownloader.IsOnlineSource(configSource))
+            CashVortexConfig config;
+            if (useBalanced)
+            {
+                Console.WriteLine("Loading Balanced 95.5% RTP mathematical configuration profile...");
+                config = CashVortexConfig.CreateBalanced955();
+            }
+            else if (SlotFramework.Utilities.GoogleSheetDownloader.IsOnlineSource(configSource))
             {
                 Console.WriteLine($"Loading configuration online from Google Sheet: {configSource}...");
+                config = CashVortexExcelLoader.Load(configSource);
             }
             else
             {
                 Console.WriteLine($"Loading configuration from local file: {configSource}...");
+                config = CashVortexExcelLoader.Load(configSource);
             }
-
-            var config = CashVortexExcelLoader.Load(configSource);
 
             Console.WriteLine("\nLoaded Configuration Summary:");
             Console.WriteLine("-------------------------------------------------------------------------------------");
@@ -250,7 +266,7 @@ class Program
             Console.WriteLine($"Bonus Outcome Types: {config.BonusOutcomeDefs.Count}");
             Console.WriteLine("-------------------------------------------------------------------------------------\n");
 
-            int totalSpins = 1_000_000;
+            int totalSpins = totalSpinsArg;
             int workerCount = Environment.ProcessorCount;
             int spinsPerWorker = totalSpins / workerCount;
             var workers = new CashVortexSimWorkerStats[workerCount];
