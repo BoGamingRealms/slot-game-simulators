@@ -709,7 +709,9 @@ class Program
                 try
                 {
                     Console.WriteLine($"\nUpdating 'Stats' tab in game config file: {localConfigToUpdate}...");
+                    SanitizeDrawingIds(localConfigToUpdate);
                     using var configWorkbook = new XLWorkbook(localConfigToUpdate);
+
                     var configStatsWs = configWorkbook.Worksheets.FirstOrDefault(w => w.Name.Equals("Stats", StringComparison.OrdinalIgnoreCase));
                     if (configStatsWs == null)
                     {
@@ -1081,5 +1083,40 @@ class Program
         }
 
         ws.Columns().AdjustToContents();
+    }
+
+    private static void SanitizeDrawingIds(string filePath)
+    {
+        try
+        {
+            using var zip = System.IO.Compression.ZipFile.Open(filePath, System.IO.Compression.ZipArchiveMode.Update);
+            int nextId = 1;
+            var drawingEntries = zip.Entries
+                .Where(e => e.FullName.StartsWith("xl/drawings/drawing", StringComparison.OrdinalIgnoreCase) && e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (var entry in drawingEntries)
+            {
+                string content;
+                using (var reader = new StreamReader(entry.Open()))
+                {
+                    content = reader.ReadToEnd();
+                }
+
+                if (content.Contains("cNvPr id="))
+                {
+                    string fullName = entry.FullName;
+                    string modified = System.Text.RegularExpressions.Regex.Replace(content, @"cNvPr id=""[^""]+""", m => $@"cNvPr id=""{nextId++}""");
+                    entry.Delete();
+                    var newEntry = zip.CreateEntry(fullName);
+                    using var writer = new StreamWriter(newEntry.Open());
+                    writer.Write(modified);
+                }
+            }
+        }
+        catch
+        {
+            // Ignore non-fatal drawing sanitize errors
+        }
     }
 }
