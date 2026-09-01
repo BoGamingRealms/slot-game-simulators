@@ -63,12 +63,13 @@ public class CashVortexExcelLoader
         }
 
         DataTable? dataTable = null;
+        Console.WriteLine($"Excel file has {result.Tables.Count} tables:");
         foreach (DataTable table in result.Tables)
         {
+            Console.WriteLine($"  - Sheet: \"{table.TableName}\" (Rows: {table.Rows.Count}, Cols: {table.Columns.Count})");
             if (table.TableName.Trim().Equals("Data", StringComparison.OrdinalIgnoreCase))
             {
                 dataTable = table;
-                break;
             }
         }
 
@@ -114,91 +115,94 @@ public class CashVortexExcelLoader
             var row = dataTable.Rows[r];
             string col0 = GetCellString(row, 0).Trim();
             string col1 = GetCellString(row, 1).Trim();
-
             if (string.IsNullOrEmpty(col0) && string.IsNullOrEmpty(col1)) continue;
 
             string checkStr = string.IsNullOrEmpty(col0) ? col1 : col0;
+            bool isDataRowWithNumber = TryParseDouble(row, 1, out _) && !string.IsNullOrEmpty(col0);
 
-            // Detect section headers
-            if (checkStr.StartsWith("Table Selections", StringComparison.OrdinalIgnoreCase))
+            // Detect section headers only if not a data row
+            if (!isDataRowWithNumber)
             {
-                currentSection = "Table Selections";
-                continue;
-            }
-            else if (checkStr.StartsWith("Special Symbols Chance", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = "Special Symbols Chance";
-                continue;
-            }
-            else if (checkStr.StartsWith("Special Symbol", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = "Special Symbols";
-                continue;
-            }
-            else if (checkStr.StartsWith("Wheel Bonus", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = "Wheel Bonus";
-                continue;
-            }
-            else if (checkStr.StartsWith("Slingo Ladder", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = "Slingo Ladder";
-                inBonusSection = true;
-                continue;
-            }
-            else if (checkStr.StartsWith("Symbol Landing Chance", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = "Symbol Landing Chance";
-                inBonusSection = true;
-                continue;
-            }
-            else if (checkStr.StartsWith("Symbols Landing", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = "Symbols Landing Selections";
-                inBonusSection = true;
-                continue;
-            }
-            else if (checkStr.StartsWith("Cash Vortex", StringComparison.OrdinalIgnoreCase) ||
-                     checkStr.StartsWith("Vortex", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = "Cash Vortexes";
-                continue;
-            }
-            else if (checkStr.StartsWith("Jackpot Coins", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = inBonusSection ? "Bonus Jackpot Coins" : "Jackpot Coins";
-                continue;
-            }
-            else if (checkStr.StartsWith("Cash Strikes", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = inBonusSection ? "Bonus Cash Strikes" : "Cash Strikes";
-                continue;
-            }
-            else if (checkStr.StartsWith("Cash Coins Chance", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = "Cash Coins Chance";
-                continue;
-            }
-            else if (checkStr.StartsWith("Cash Coins", StringComparison.OrdinalIgnoreCase) ||
-                     checkStr.StartsWith("For each landing Cash Coin", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = inBonusSection ? "Bonus Cash Coins" : "Cash Coins";
-                continue;
-            }
-            else if (checkStr.StartsWith("Mini Wheel", StringComparison.OrdinalIgnoreCase) || checkStr.StartsWith("Wheel 1", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = inBonusSection ? "Bonus Mini Wheel" : "Mini Wheel";
-                continue;
-            }
-            else if (checkStr.StartsWith("Mega Wheel", StringComparison.OrdinalIgnoreCase) || checkStr.StartsWith("Wheel 2", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = inBonusSection ? "Bonus Mega Wheel" : "Mega Wheel";
-                continue;
-            }
-            else if (checkStr.StartsWith("Ultra Wheel", StringComparison.OrdinalIgnoreCase) || checkStr.StartsWith("Wheel 3", StringComparison.OrdinalIgnoreCase))
-            {
-                currentSection = inBonusSection ? "Bonus Ultra Wheel" : "Ultra Wheel";
-                continue;
+                if (checkStr.StartsWith("Table Selections", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "Table Selections";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Special Symbols Chance", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "Special Symbols Chance";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Special Symbol", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "Special Symbols";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Wheel Bonus", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "Wheel Bonus";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Slingo Ladder", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "Slingo Ladder";
+                    inBonusSection = true;
+                    continue;
+                }
+                else if (checkStr.StartsWith("Symbol Landing Chance", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "Symbol Landing Chance";
+                    inBonusSection = true;
+                    continue;
+                }
+                else if (checkStr.StartsWith("Symbols Landing", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "Symbols Landing Selections";
+                    inBonusSection = true;
+                    continue;
+                }
+                else if (checkStr.StartsWith("Cash Vortex", StringComparison.OrdinalIgnoreCase) ||
+                         checkStr.StartsWith("Vortex", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "Cash Vortexes";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Jackpot Coin", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = inBonusSection ? "Bonus Jackpot Coins" : "Jackpot Coins";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Cash Strike", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = inBonusSection ? "Bonus Cash Strikes" : "Cash Strikes";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Cash Coins Chance", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "Cash Coins Chance";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Cash Coin", StringComparison.OrdinalIgnoreCase) ||
+                         checkStr.StartsWith("For each landing Cash Coin", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = inBonusSection ? "Bonus Cash Coins" : "Cash Coins";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Mini Wheel", StringComparison.OrdinalIgnoreCase) || checkStr.StartsWith("Wheel 1", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = inBonusSection ? "Bonus Mini Wheel" : "Mini Wheel";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Mega Wheel", StringComparison.OrdinalIgnoreCase) || checkStr.StartsWith("Wheel 2", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = inBonusSection ? "Bonus Mega Wheel" : "Mega Wheel";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Ultra Wheel", StringComparison.OrdinalIgnoreCase) || checkStr.StartsWith("Wheel 3", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = inBonusSection ? "Bonus Ultra Wheel" : "Ultra Wheel";
+                    continue;
+                }
             }
 
             // Skip table header or summary rows
@@ -679,8 +683,17 @@ public class CashVortexExcelLoader
         }
         else
         {
-            prize.Type = WheelPrizeType.InstantCash;
-            prize.ParameterValue = 1.0;
+            var match = System.Text.RegularExpressions.Regex.Match(s, @"\d+(\.\d+)?");
+            if (match.Success && double.TryParse(match.Value, out double numVal))
+            {
+                prize.Type = WheelPrizeType.InstantCash;
+                prize.ParameterValue = numVal;
+            }
+            else
+            {
+                prize.Type = WheelPrizeType.InstantCash;
+                prize.ParameterValue = 1.0;
+            }
         }
 
         return prize;

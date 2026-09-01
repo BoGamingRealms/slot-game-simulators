@@ -200,7 +200,7 @@ class Program
             localDefault = "CashVortexTriplePower95.xlsx";
         }
 
-        string configSource = File.Exists(localDefault) ? localDefault : CashVortexExcelLoader.DefaultGoogleSheetUrl;
+        string configSource = CashVortexExcelLoader.DefaultGoogleSheetUrl;
         string resultsPath = Directory.Exists(downloadsFolder)
             ? Path.Combine(downloadsFolder, "CashVortexTriplePower95_Results.xlsx")
             : "CashVortexTriplePower95_Results.xlsx";
@@ -272,7 +272,8 @@ class Program
                 config = CashVortexExcelLoader.Load(configSource);
             }
 
-            Console.WriteLine("\nLoaded Configuration Summary:");
+            CashVortexConfig balancedConfig = CashVortexConfig.CreateBalanced955();
+            CompareConfigs(config, balancedConfig);
             Console.WriteLine("-------------------------------------------------------------------------------------");
             Console.WriteLine($"Table Selections Count: {config.TableSelections.Count}");
             Console.WriteLine($"Special Symbol Types: {config.SpecialSymbolDefs.Count}");
@@ -295,6 +296,10 @@ class Program
             }
             Console.WriteLine($"Bonus Landing Base Factor: {config.BonusBaseFactor}");
             Console.WriteLine($"Bonus Outcome Types: {config.BonusOutcomeDefs.Count}");
+            foreach (var bo in config.BonusOutcomeDefs)
+            {
+                Console.WriteLine($"   * Outcome {bo.OutcomeId}: \"{bo.Description}\" | Weights: [{string.Join(", ", bo.WeightsBySpaceBucket)}]");
+            }
             Console.WriteLine("-------------------------------------------------------------------------------------\n");
 
             if (showDataTab)
@@ -989,7 +994,18 @@ class Program
         }
         Console.WriteLine();
 
-        // 16. Bonus Cash Strikes
+        // 16. Bonus Jackpot Coins
+        if (config.BonusJackpotCoins.Count > 0)
+        {
+            Console.WriteLine("Jackpot Coins\tMultiplier\tWeight");
+            foreach (var jp in config.BonusJackpotCoins)
+            {
+                Console.WriteLine($"{jp.JackpotName}\t{jp.Multiplier}\t{jp.Weight}");
+            }
+            Console.WriteLine();
+        }
+
+        // 17. Bonus Cash Strike Types
         if (config.BonusCashStrikeTypes.Count > 0)
         {
             Console.WriteLine("Cash Strikes\tWeight");
@@ -1000,7 +1016,327 @@ class Program
             Console.WriteLine();
         }
 
+        // 18. Bonus Cash Strike Values
+        if (config.BonusCashStrikeValues.Count > 0)
+        {
+            Console.WriteLine("Cash Strikes\tWeight");
+            foreach (var bcsv in config.BonusCashStrikeValues)
+            {
+                Console.WriteLine($"{bcsv.Multiplier}\t{bcsv.Weight}");
+            }
+            Console.WriteLine();
+        }
+
+        // 19. Bonus Cash Coins Values
+        if (config.BonusCashCoinValues.Count > 0)
+        {
+            Console.WriteLine("Cash Coins\tWeight");
+            foreach (var bccv in config.BonusCashCoinValues)
+            {
+                Console.WriteLine($"{bccv.Multiplier}\t{bccv.Weight}");
+            }
+            Console.WriteLine();
+        }
+
+        // 20. Bonus Mini Wheel
+        if (config.BonusMiniWheelPrizes.Count > 0)
+        {
+            Console.WriteLine("Mini Wheel\tPrize\tWeight");
+            int bmwId = 1;
+            foreach (var p in config.BonusMiniWheelPrizes)
+            {
+                Console.WriteLine($"{bmwId++}\t{p.PrizeString}\t{p.Weight}");
+            }
+            Console.WriteLine();
+        }
+
+        // 21. Bonus Mega Wheel
+        if (config.BonusMegaWheelPrizes.Count > 0)
+        {
+            Console.WriteLine("Mega Wheel\tPrize\tWeight");
+            int bmgwId = 1;
+            foreach (var p in config.BonusMegaWheelPrizes)
+            {
+                Console.WriteLine($"{bmgwId++}\t{p.PrizeString}\t{p.Weight}");
+            }
+            Console.WriteLine();
+        }
+
+        // 22. Bonus Ultra Wheel
+        if (config.BonusUltraWheelPrizes.Count > 0)
+        {
+            Console.WriteLine("Ultra Wheel\tPrize\tWeight");
+            int buwId = 1;
+            foreach (var p in config.BonusUltraWheelPrizes)
+            {
+                Console.WriteLine($"{buwId++}\t{p.PrizeString}\t{p.Weight}");
+            }
+            Console.WriteLine();
+        }
+
         Console.WriteLine("=========================================================================================\n");
+    }
+
+    public static void CompareConfigs(CashVortexConfig loaded, CashVortexConfig balanced)
+    {
+        Console.WriteLine("\n=========================================================================================");
+        Console.WriteLine("               CONFIGURATION AUDIT & COMPARISON vs BALANCED 95.5% PROFILE                ");
+        Console.WriteLine("=========================================================================================");
+
+        int diffCount = 0;
+
+        // 1. Table Selections
+        if (loaded.TableSelections.Count != balanced.TableSelections.Count)
+        {
+            Console.WriteLine($"[DIFF] TableSelections count mismatch: Loaded={loaded.TableSelections.Count} vs Balanced={balanced.TableSelections.Count}");
+            diffCount++;
+        }
+        else
+        {
+            for (int i = 0; i < loaded.TableSelections.Count; i++)
+            {
+                if (loaded.TableSelections[i].Weight != balanced.TableSelections[i].Weight)
+                {
+                    Console.WriteLine($"[DIFF] TableSelection '{loaded.TableSelections[i].Description}' Weight: Loaded={loaded.TableSelections[i].Weight} vs Balanced={balanced.TableSelections[i].Weight}");
+                    diffCount++;
+                }
+            }
+        }
+
+        // 2. Special Symbols Chance
+        for (int i = 0; i < Math.Min(loaded.SpecialSymbolChances.Count, balanced.SpecialSymbolChances.Count); i++)
+        {
+            var l = loaded.SpecialSymbolChances[i];
+            var b = balanced.SpecialSymbolChances[i];
+            if (l.SpecialSymbolWeight != b.SpecialSymbolWeight || l.NoSpecialSymbolWeight != b.NoSpecialSymbolWeight)
+            {
+                Console.WriteLine($"[DIFF] SpecialSymbolChance '{l.Description}': Loaded=({l.SpecialSymbolWeight}/{l.NoSpecialSymbolWeight}) vs Balanced=({b.SpecialSymbolWeight}/{b.NoSpecialSymbolWeight})");
+                diffCount++;
+            }
+        }
+
+        // 3. Special Symbols
+        for (int i = 0; i < Math.Min(loaded.SpecialSymbolDefs.Count, balanced.SpecialSymbolDefs.Count); i++)
+        {
+            var l = loaded.SpecialSymbolDefs[i];
+            var b = balanced.SpecialSymbolDefs[i];
+            if (l.SymbolName != b.SymbolName || l.Weight != b.Weight)
+            {
+                Console.WriteLine($"[DIFF] SpecialSymbol '{l.SymbolName}': Loaded={l.Weight} vs Balanced={b.Weight}");
+                diffCount++;
+            }
+        }
+
+        // 4. Cash Vortex Base Pays
+        if (loaded.MiniVortexBasePay != balanced.MiniVortexBasePay ||
+            loaded.MegaVortexBasePay != balanced.MegaVortexBasePay ||
+            loaded.UltraVortexBasePay != balanced.UltraVortexBasePay)
+        {
+            Console.WriteLine($"[DIFF] Cash Vortex Base Pays: Loaded=({loaded.MiniVortexBasePay}x, {loaded.MegaVortexBasePay}x, {loaded.UltraVortexBasePay}x) vs Balanced=({balanced.MiniVortexBasePay}x, {balanced.MegaVortexBasePay}x, {balanced.UltraVortexBasePay}x)");
+            diffCount++;
+        }
+
+        // 5. Jackpot Coins
+        for (int i = 0; i < Math.Min(loaded.JackpotCoins.Count, balanced.JackpotCoins.Count); i++)
+        {
+            var l = loaded.JackpotCoins[i];
+            var b = balanced.JackpotCoins[i];
+            if (l.JackpotName != b.JackpotName || l.Multiplier != b.Multiplier || l.Weight != b.Weight)
+            {
+                Console.WriteLine($"[DIFF] JackpotCoin '{l.JackpotName} ({l.Multiplier}x)': Loaded Weight={l.Weight} vs Balanced Weight={b.Weight}");
+                diffCount++;
+            }
+        }
+
+        // 6. Cash Strikes
+        for (int i = 0; i < Math.Min(loaded.CashStrikeValues.Count, balanced.CashStrikeValues.Count); i++)
+        {
+            var l = loaded.CashStrikeValues[i];
+            var b = balanced.CashStrikeValues[i];
+            if (l.Multiplier != b.Multiplier || l.Weight != b.Weight)
+            {
+                Console.WriteLine($"[DIFF] CashStrike Value {l.Multiplier}x: Loaded Weight={l.Weight} vs Balanced Weight={b.Weight}");
+                diffCount++;
+            }
+        }
+
+        // 7. Cash Coins Chance
+        for (int i = 0; i < Math.Min(loaded.CashCoinChances.Count, balanced.CashCoinChances.Count); i++)
+        {
+            var l = loaded.CashCoinChances[i];
+            var b = balanced.CashCoinChances[i];
+            if (l.CoinWeight != b.CoinWeight || l.BlankWeight != b.BlankWeight)
+            {
+                Console.WriteLine($"[DIFF] CashCoinChance '{l.Description}': Loaded=({l.CoinWeight}/{l.BlankWeight}) vs Balanced=({b.CoinWeight}/{b.BlankWeight})");
+                diffCount++;
+            }
+        }
+
+        // 8. Cash Coins Values
+        for (int i = 0; i < Math.Min(loaded.CashCoinValues.Count, balanced.CashCoinValues.Count); i++)
+        {
+            var l = loaded.CashCoinValues[i];
+            var b = balanced.CashCoinValues[i];
+            if (l.Multiplier != b.Multiplier || l.Weight != b.Weight)
+            {
+                Console.WriteLine($"[DIFF] CashCoin Value {l.Multiplier}x: Loaded Weight={l.Weight} vs Balanced Weight={b.Weight}");
+                diffCount++;
+            }
+        }
+
+        // 9. Center Wheel Prizes
+        for (int i = 0; i < Math.Min(loaded.CenterWheelPrizes.Count, balanced.CenterWheelPrizes.Count); i++)
+        {
+            var l = loaded.CenterWheelPrizes[i];
+            var b = balanced.CenterWheelPrizes[i];
+            if (l.PrizeString != b.PrizeString || l.Weight != b.Weight)
+            {
+                Console.WriteLine($"[DIFF] CenterWheel Prize '{l.PrizeString}': Loaded Weight={l.Weight} vs Balanced Weight={b.Weight}");
+                diffCount++;
+            }
+        }
+
+        // 10. Mini / Mega / Ultra X-Wheels
+        AuditWheelPrizeList("Base Mini Wheel", loaded.MiniWheelPrizes, balanced.MiniWheelPrizes, ref diffCount);
+        AuditWheelPrizeList("Base Mega Wheel", loaded.MegaWheelPrizes, balanced.MegaWheelPrizes, ref diffCount);
+        AuditWheelPrizeList("Base Ultra Wheel", loaded.UltraWheelPrizes, balanced.UltraWheelPrizes, ref diffCount);
+
+        // 11. Slingo Ladder
+        for (int s = 1; s <= 12; s++)
+        {
+            var lpL = loaded.SlingoLadderPrizes.FirstOrDefault(x => x.SlingoCount == s);
+            var lpB = balanced.SlingoLadderPrizes.FirstOrDefault(x => x.SlingoCount == s);
+            if (lpL == null && lpB == null) continue;
+            if (lpL == null || lpB == null || lpL.Type != lpB.Type || lpL.ParameterValue != lpB.ParameterValue || lpL.JackpotType != lpB.JackpotType)
+            {
+                Console.WriteLine($"[DIFF] Slingo Ladder Step {s}: Loaded='{lpL?.PrizeString ?? "None"}' ({lpL?.Type}) vs Balanced='{lpB?.PrizeString ?? "None"}' ({lpB?.Type})");
+                diffCount++;
+            }
+        }
+
+        // 12. Symbol Landing Chance Matrix
+        for (int life = 1; life <= 3; life++)
+        {
+            for (int b = 0; b < 5; b++)
+            {
+                int wL = loaded.BonusLandingWeightsByLifeAndBucket[life, b];
+                int wB = balanced.BonusLandingWeightsByLifeAndBucket[life, b];
+                if (wL != wB)
+                {
+                    Console.WriteLine($"[DIFF] BonusLandingChance Life {life} Bucket {b + 1}: Loaded={wL} vs Balanced={wB}");
+                    diffCount++;
+                }
+            }
+        }
+
+        // 13. Symbols Landing Selections (All 15 outcomes)
+        if (loaded.BonusOutcomeDefs.Count != balanced.BonusOutcomeDefs.Count)
+        {
+            Console.WriteLine($"[DIFF] BonusOutcomeDefs Count: Loaded={loaded.BonusOutcomeDefs.Count} vs Balanced={balanced.BonusOutcomeDefs.Count}");
+            diffCount++;
+        }
+        else
+        {
+            for (int o = 0; o < loaded.BonusOutcomeDefs.Count; o++)
+            {
+                var oL = loaded.BonusOutcomeDefs[o];
+                var oB = balanced.BonusOutcomeDefs[o];
+                if (oL.Description != oB.Description)
+                {
+                    Console.WriteLine($"[DIFF] BonusOutcomeDef {o} Description: Loaded='{oL.Description}' vs Balanced='{oB.Description}'");
+                    diffCount++;
+                }
+                for (int b = 0; b < 5; b++)
+                {
+                    if (oL.WeightsBySpaceBucket[b] != oB.WeightsBySpaceBucket[b])
+                    {
+                        Console.WriteLine($"[DIFF] BonusOutcomeDef '{oL.Description}' Bucket {b + 1}: Loaded={oL.WeightsBySpaceBucket[b]} vs Balanced={oB.WeightsBySpaceBucket[b]}");
+                        diffCount++;
+                    }
+                }
+            }
+        }
+
+        // 14. Bonus Jackpot Coins
+        for (int i = 0; i < Math.Min(loaded.BonusJackpotCoins.Count, balanced.BonusJackpotCoins.Count); i++)
+        {
+            var l = loaded.BonusJackpotCoins[i];
+            var b = balanced.BonusJackpotCoins[i];
+            if (l.JackpotName != b.JackpotName || l.Multiplier != b.Multiplier || l.Weight != b.Weight)
+            {
+                Console.WriteLine($"[DIFF] Bonus JackpotCoin '{l.JackpotName} ({l.Multiplier}x)': Loaded Weight={l.Weight} vs Balanced Weight={b.Weight}");
+                diffCount++;
+            }
+        }
+
+        // 15. Bonus Cash Strike Types & Values
+        for (int i = 0; i < Math.Min(loaded.BonusCashStrikeTypes.Count, balanced.BonusCashStrikeTypes.Count); i++)
+        {
+            var l = loaded.BonusCashStrikeTypes[i];
+            var b = balanced.BonusCashStrikeTypes[i];
+            if (l.SymbolName != b.SymbolName || l.Weight != b.Weight)
+            {
+                Console.WriteLine($"[DIFF] Bonus CashStrike Type '{l.SymbolName}': Loaded Weight={l.Weight} vs Balanced Weight={b.Weight}");
+                diffCount++;
+            }
+        }
+        for (int i = 0; i < Math.Min(loaded.BonusCashStrikeValues.Count, balanced.BonusCashStrikeValues.Count); i++)
+        {
+            var l = loaded.BonusCashStrikeValues[i];
+            var b = balanced.BonusCashStrikeValues[i];
+            if (l.Multiplier != b.Multiplier || l.Weight != b.Weight)
+            {
+                Console.WriteLine($"[DIFF] Bonus CashStrike Value {l.Multiplier}x: Loaded Weight={l.Weight} vs Balanced Weight={b.Weight}");
+                diffCount++;
+            }
+        }
+
+        // 16. Bonus Cash Coin Values
+        for (int i = 0; i < Math.Min(loaded.BonusCashCoinValues.Count, balanced.BonusCashCoinValues.Count); i++)
+        {
+            var l = loaded.BonusCashCoinValues[i];
+            var b = balanced.BonusCashCoinValues[i];
+            if (l.Multiplier != b.Multiplier || l.Weight != b.Weight)
+            {
+                Console.WriteLine($"[DIFF] Bonus CashCoin Value {l.Multiplier}x: Loaded Weight={l.Weight} vs Balanced Weight={b.Weight}");
+                diffCount++;
+            }
+        }
+
+        // 17. Bonus X-Wheels
+        AuditWheelPrizeList("Bonus Mini Wheel", loaded.BonusMiniWheelPrizes, balanced.BonusMiniWheelPrizes, ref diffCount);
+        AuditWheelPrizeList("Bonus Mega Wheel", loaded.BonusMegaWheelPrizes, balanced.BonusMegaWheelPrizes, ref diffCount);
+        AuditWheelPrizeList("Bonus Ultra Wheel", loaded.BonusUltraWheelPrizes, balanced.BonusUltraWheelPrizes, ref diffCount);
+
+        if (diffCount == 0)
+        {
+            Console.WriteLine("[AUDIT PASSED] The loaded Google Drive configuration matches the balanced 95.5% profile 100% identically across all tables!");
+        }
+        else
+        {
+            Console.WriteLine($"[AUDIT WARNING] Found {diffCount} configuration differences between loaded Google Drive sheet and balanced 95.5% profile.");
+        }
+        Console.WriteLine("=========================================================================================\n");
+    }
+
+    private static void AuditWheelPrizeList(string wheelName, List<WheelPrizeDef> loadedList, List<WheelPrizeDef> balancedList, ref int diffCount)
+    {
+        if (loadedList.Count != balancedList.Count)
+        {
+            Console.WriteLine($"[DIFF] {wheelName} Prize Count: Loaded={loadedList.Count} vs Balanced={balancedList.Count}");
+            diffCount++;
+            return;
+        }
+        for (int i = 0; i < loadedList.Count; i++)
+        {
+            var l = loadedList[i];
+            var b = balancedList[i];
+            if (l.Type != b.Type || Math.Abs(l.ParameterValue - b.ParameterValue) > 0.001 || l.Weight != b.Weight || l.JackpotType != b.JackpotType)
+            {
+                Console.WriteLine($"[DIFF] {wheelName} Segment {i + 1}: Loaded=({l.Type}, {l.ParameterValue}x, W:{l.Weight}) vs Balanced=({b.Type}, {b.ParameterValue}x, W:{b.Weight})");
+                diffCount++;
+            }
+        }
     }
 
     private static void RunPrizeEvaluation(CashVortexConfig config, int totalRounds)
@@ -1220,15 +1556,15 @@ class Program
 
         int r = 4;
 
-        // SECTION 1: EXECUTIVE SUMMARY & RTP BREAKDOWN
-        ws.Cell(r, 1).Value = "1. EXECUTIVE SUMMARY & RTP BREAKDOWN";
+        // SECTION 1: Game SUMMARY & RTP BREAKDOWN
+        ws.Cell(r, 1).Value = "1. Game SUMMARY & RTP BREAKDOWN";
         ws.Range(r, 1, r, 5).Merge().Style.Font.Bold = true;
         ws.Range(r, 1, r, 5).Style.Font.FontSize = 11;
         ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
         r++;
 
-        ws.Cell(r, 1).Value = "Metric / Component";
-        ws.Cell(r, 2).Value = "Value / Metric Count";
+        ws.Cell(r, 1).Value = "Game Component";
+        ws.Cell(r, 2).Value = "Value / RTP";
         ws.Cell(r, 3).Value = "Hit Frequency / Trigger Rate";
         ws.Cell(r, 4).Value = "Spin Chance %";
         ws.Cell(r, 5).Value = "Contribution RTP %";
@@ -1272,8 +1608,8 @@ class Program
         AddSummaryRow("Full House (25 Cells / 12 Slingos) Hits", lockAndSlingoFullHouses, $"{((double)lockAndSlingoFullHouses / Math.Max(1, lockAndSlingoTriggers)):P2} of bonuses", (double)lockAndSlingoFullHouses / totalSpins, 0);
         r += 2;
 
-        // SECTION 2: SPECIAL SYMBOL TARGET EFFICIENCY & ZERO-EFFECT ANALYSIS
-        ws.Cell(r, 1).Value = "2. SPECIAL SYMBOL TARGET EFFICIENCY & ZERO-EFFECT ANALYSIS";
+        // SECTION 2: SPECIAL SYMBOL
+        ws.Cell(r, 1).Value = "2. SPECIAL SYMBOL";
         ws.Range(r, 1, r, 6).Merge().Style.Font.Bold = true;
         ws.Range(r, 1, r, 6).Style.Font.FontSize = 11;
         ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
@@ -1347,8 +1683,8 @@ class Program
         }
         r += 2;
 
-        // SECTION 4: REEL-TOP X-WHEEL DETAILED BREAKDOWN
-        ws.Cell(r, 1).Value = "4. REEL-TOP X-WHEEL FEATURE DETAILED BREAKDOWN";
+        // SECTION 4: X-WHEEL BREAKDOWN
+        ws.Cell(r, 1).Value = "4. X-WHEEL BREAKDOWN";
         ws.Range(r, 1, r, 7).Merge().Style.Font.Bold = true;
         ws.Range(r, 1, r, 7).Style.Font.FontSize = 11;
         ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
@@ -1394,8 +1730,8 @@ class Program
         }
         r += 2;
 
-        // SECTION 5: LOCK & SLINGO™ LADDER ACHIEVEMENTS
-        ws.Cell(r, 1).Value = "5. LOCK & SLINGO™ RESPIN LADDER ACHIEVEMENTS";
+        // SECTION 5: LOCK & SLINGO™
+        ws.Cell(r, 1).Value = "5. LOCK & SLINGO™";
         ws.Range(r, 1, r, 7).Merge().Style.Font.Bold = true;
         ws.Range(r, 1, r, 7).Style.Font.FontSize = 11;
         ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
@@ -1440,8 +1776,8 @@ class Program
         }
         r += 2;
 
-        // SECTION 6: JACKPOT SYSTEM BREAKDOWN
-        ws.Cell(r, 1).Value = "6. JACKPOT SYSTEM BREAKDOWN";
+        // SECTION 6: JACKPOT
+        ws.Cell(r, 1).Value = "6. JACKPOT";
         ws.Range(r, 1, r, 6).Merge().Style.Font.Bold = true;
         ws.Range(r, 1, r, 6).Style.Font.FontSize = 11;
         ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
