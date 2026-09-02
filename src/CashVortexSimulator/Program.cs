@@ -162,6 +162,14 @@ public class CashVortexSimWorkerStats
             }
         }
 
+        foreach (var jpType in result.CompletedLineJackpots)
+        {
+            if (jpType.Contains("Ultra", StringComparison.OrdinalIgnoreCase))
+            {
+                UltraJackpotBaseGridHits++;
+            }
+        }
+
         for (int r = 0; r < 5; r++)
         {
             for (int c = 0; c < 5; c++)
@@ -178,10 +186,6 @@ public class CashVortexSimWorkerStats
                                 JackpotHits[cell.JackpotType] = JackpotHits.GetValueOrDefault(cell.JackpotType) + 1;
                                 long jpWin = (long)Math.Round(cell.CashValue * 100);
                                 JackpotWins[cell.JackpotType] = JackpotWins.GetValueOrDefault(cell.JackpotType) + jpWin;
-                                if (cell.JackpotType.Contains("Ultra", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    UltraJackpotBaseGridHits++;
-                                }
                             }
                             break;
                         case SymbolType.MiniVortex:
@@ -716,10 +720,10 @@ class Program
                 Console.WriteLine($"  - {srcName,-42}: Hits = {hits,6:N0} | {featTotalName} = {featRate,6:P2} | Spin Chance = {spinChance,7:P4} | {oneInN} | RTP = {rtp,7:P4}");
             }
 
-            PrintUltraJpConsoleRow("1. Base Game Grid (Jackpot Coin)", ultraJpBaseGridHits, jackpotCoinHits, "Coin Rate ");
+            PrintUltraJpConsoleRow("1. Base Game Grid (Completed Line Wins)", ultraJpBaseGridHits, jackpotCoinHits, "Coin Rate ");
             PrintUltraJpConsoleRow("2. Center Wild Wheel Bonus", ultraJpCenterWheelHits, centerWheelTriggers, "Wheel Rate");
             PrintUltraJpConsoleRow("3. Reel-Top X-Wheel (Wheel 3)", ultraJpXWheelHits, wheelReachHits[3], "Wheel3 Rate");
-            PrintUltraJpConsoleRow("4. Lock & Slingo™ (Bonus Grid Coin)", ultraJpBonusGridHits, lockAndSlingoTriggers, "Bonus Rate");
+            PrintUltraJpConsoleRow("4. Lock & Slingo™ (Bonus Grid Coin Wins)", ultraJpBonusGridHits, lockAndSlingoTriggers, "Bonus Rate");
             PrintUltraJpConsoleRow("5. Lock & Slingo™ (Full House 12 Lines)", ultraJpBonusFullHouseHits, lockAndSlingoTriggers, "Bonus Rate");
             PrintUltraJpConsoleRow("6. Lock & Slingo™ (Bonus X-Wheel 3)", ultraJpBonusXWheelHits, lockAndSlingoTriggers, "Bonus Rate");
             Console.WriteLine("  ---------------------------------------------------------------------------------------------------------------------------------------");
@@ -2025,10 +2029,10 @@ class Program
             r++;
         }
 
-        AddTopWinRow("1. Base Game Grid (Jackpot Coin Landing)", ultraJpBaseGridHits, jackpotCoinHits);
+        AddTopWinRow("1. Base Game Grid (Completed Line Wins)", ultraJpBaseGridHits, jackpotCoinHits);
         AddTopWinRow("2. Center Wild Wheel Bonus", ultraJpCenterWheelHits, centerWheelTriggers);
         AddTopWinRow("3. Reel-Top X-Wheel (Base Game Wheel 3)", ultraJpXWheelHits, wheelReachHits[3]);
-        AddTopWinRow("4. Lock & Slingo™ (Bonus Grid Coin Landing)", ultraJpBonusGridHits, lockAndSlingoTriggers);
+        AddTopWinRow("4. Lock & Slingo™ (Bonus Grid Coin Wins)", ultraJpBonusGridHits, lockAndSlingoTriggers);
         AddTopWinRow("5. Lock & Slingo™ (Full House / 12 Lines)", ultraJpBonusFullHouseHits, lockAndSlingoTriggers);
         AddTopWinRow("6. Lock & Slingo™ (Bonus X-Wheel 3)", ultraJpBonusXWheelHits, lockAndSlingoTriggers);
 

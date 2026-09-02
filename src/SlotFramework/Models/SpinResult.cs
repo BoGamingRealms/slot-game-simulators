@@ -20,6 +20,7 @@ public class SpinResult
     public long TotalWin { get; set; }
     public bool TriggeredFeature { get; set; }
     public int Multiplier { get; set; } = 1;
+    public List<string> CompletedLineJackpots { get; set; } = new();
 
     // Feature details
     public long FeatureWin { get; set; } = 0;

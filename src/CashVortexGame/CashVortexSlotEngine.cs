@@ -525,9 +525,14 @@ public class CashVortexSlotEngine : ISlotEngine
                 {
                     int r = idx / 5;
                     int c = idx % 5;
+                    var cell = _grid[r, c];
+                    if (cell.Type == SymbolType.JackpotCoin && !string.IsNullOrEmpty(cell.JackpotType))
+                    {
+                        spinResult.CompletedLineJackpots.Add(cell.JackpotType);
+                    }
                     if (r != 2 || c != 2)
                     {
-                        _grid[r, c].WonThisSpin = true;
+                        cell.WonThisSpin = true;
                     }
                 }
             }
