@@ -66,4 +66,5 @@ public class TriggeredPotBonus
     public int BananasCollected { get; set; }
     public int FinalPrimalZoneStage { get; set; }
     public int FinalPrimalZoneSize { get; set; }
+    public int TargetAffectedCount { get; set; }
 }

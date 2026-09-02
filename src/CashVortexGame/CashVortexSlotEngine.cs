@@ -1481,7 +1481,8 @@ public class CashVortexSlotEngine : ISlotEngine
                 {
                     PotIndex = 1,
                     BonusName = $"XWheel:W{currentWheel}:Upgrade",
-                    Win = 0
+                    Win = 0,
+                    TargetAffectedCount = 1
                 });
 
                 currentWheel++;
@@ -1490,6 +1491,7 @@ public class CashVortexSlotEngine : ISlotEngine
             }
 
             long featureWinCents = 0;
+            int affected = 0;
 
             switch (prize.Type)
             {
@@ -1503,6 +1505,10 @@ public class CashVortexSlotEngine : ISlotEngine
                             if (cell.Type != SymbolType.Blank && cell.Type != SymbolType.CentralWildStar && cell.Type != SymbolType.JackpotCoin)
                             {
                                 cell.CashValue *= mult;
+                                if (cell.Type != SymbolType.XWheel)
+                                {
+                                    affected++;
+                                }
                             }
                         }
                     }
@@ -1518,6 +1524,10 @@ public class CashVortexSlotEngine : ISlotEngine
                             if (cell.Type != SymbolType.Blank && cell.Type != SymbolType.CentralWildStar && cell.Type != SymbolType.JackpotCoin)
                             {
                                 cell.CashValue += strike;
+                                if (cell.Type != SymbolType.XWheel)
+                                {
+                                    affected++;
+                                }
                             }
                         }
                     }
@@ -1534,24 +1544,33 @@ public class CashVortexSlotEngine : ISlotEngine
                     }
                     featureWinCents = (long)Math.Round(jpMult * 100);
                     spinResult.TotalWin += featureWinCents;
+                    affected = 1;
                     break;
 
                 case WheelPrizeType.InstantCash:
                     double cashMult = prize.ParameterValue > 0 ? prize.ParameterValue : 1.0;
                     featureWinCents = (long)Math.Round(cashMult * 100);
                     spinResult.TotalWin += featureWinCents;
+                    affected = 1;
                     break;
 
                 case WheelPrizeType.LockAndSlingo:
                     PlayLockAndSlingoBonus(rng, spinResult);
+                    affected = 1;
                     break;
+            }
+
+            foreach (var xc in newlyLanded.Where(c => c.Type == SymbolType.XWheel))
+            {
+                xc.TargetAffectedCount = affected;
             }
 
             spinResult.TriggeredPotBonuses.Add(new TriggeredPotBonus
             {
                 PotIndex = 1,
                 BonusName = $"XWheel:W{currentWheel}:{prize.PrizeString}",
-                Win = featureWinCents
+                Win = featureWinCents,
+                TargetAffectedCount = affected
             });
 
             break;

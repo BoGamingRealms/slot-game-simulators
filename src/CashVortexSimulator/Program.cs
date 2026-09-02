@@ -33,10 +33,12 @@ public class CashVortexSimWorkerStats
     public int UltraStrikeHits { get; set; }
     public int UltraStrikeZeroHits { get; set; }
     public int XWheelHits { get; set; }
+    public int XWheelZeroHits { get; set; }
 
     // X-Wheel Feature stats (Top of reels)
     public long XWheelTotalWin { get; set; }
     public int[] WheelReachHits { get; set; } = new int[4];
+    public int[] WheelZeroHits { get; set; } = new int[4];
     public long[] WheelRtpWin { get; set; } = new long[4];
     public Dictionary<string, int> WheelPrizeHits { get; set; } = new();
     public Dictionary<string, long> WheelPrizeWins { get; set; } = new();
@@ -129,6 +131,11 @@ public class CashVortexSimWorkerStats
                         WheelReachHits[wLevel]++;
                         WheelRtpWin[wLevel] += pot.Win;
 
+                        if (prizeName != "Upgrade" && pot.TargetAffectedCount == 0)
+                        {
+                            WheelZeroHits[wLevel]++;
+                        }
+
                         string prizeKey = $"{wStr}:{prizeName}";
                         WheelPrizeHits[prizeKey] = WheelPrizeHits.GetValueOrDefault(prizeKey) + 1;
                         WheelPrizeWins[prizeKey] = WheelPrizeWins.GetValueOrDefault(prizeKey) + pot.Win;
@@ -158,9 +165,18 @@ public class CashVortexSimWorkerStats
                     LockAndSlingoFullHouses++;
                 }
 
-                UltraJackpotBonusGridHits += pot.UltraJackpotBonusGridHits;
-                UltraJackpotBonusFullHouseHits += pot.UltraJackpotBonusFullHouseHits;
-                UltraJackpotBonusXWheelHits += pot.UltraJackpotBonusXWheelHits;
+                if (pot.UltraJackpotBonusGridHits > 0)
+                {
+                    UltraJackpotBonusGridHits += pot.UltraJackpotBonusGridHits;
+                }
+                if (pot.UltraJackpotBonusFullHouseHits > 0)
+                {
+                    UltraJackpotBonusFullHouseHits += pot.UltraJackpotBonusFullHouseHits;
+                }
+                if (pot.UltraJackpotBonusXWheelHits > 0)
+                {
+                    UltraJackpotBonusXWheelHits += pot.UltraJackpotBonusXWheelHits;
+                }
             }
         }
 
@@ -218,7 +234,10 @@ public class CashVortexSimWorkerStats
                             UltraStrikeHits++;
                             if (cell.TargetAffectedCount == 0) UltraStrikeZeroHits++;
                             break;
-                        case SymbolType.XWheel: XWheelHits++; break;
+                        case SymbolType.XWheel:
+                            XWheelHits++;
+                            if (cell.TargetAffectedCount == 0) XWheelZeroHits++;
+                            break;
                     }
                 }
             }
@@ -437,6 +456,7 @@ class Program
             int ultraStrikeHits = 0;
             int ultraStrikeZeroHits = 0;
             int xWheelHits = 0;
+            int xWheelZeroHits = 0;
             long xWheelTotalWin = 0;
 
             int centerWheelTriggers = 0;
@@ -445,6 +465,7 @@ class Program
             var centerWheelPrizeWins = new Dictionary<string, long>();
 
             int[] wheelReachHits = new int[4];
+            int[] wheelZeroHits = new int[4];
             long[] wheelRtpWin = new long[4];
             var wheelPrizeHits = new Dictionary<string, int>();
             var wheelPrizeWins = new Dictionary<string, long>();
@@ -513,6 +534,7 @@ class Program
                 ultraStrikeHits += w.UltraStrikeHits;
                 ultraStrikeZeroHits += w.UltraStrikeZeroHits;
                 xWheelHits += w.XWheelHits;
+                xWheelZeroHits += w.XWheelZeroHits;
                 xWheelTotalWin += w.XWheelTotalWin;
 
                 centerWheelTriggers += w.CenterWheelTriggers;
@@ -542,6 +564,7 @@ class Program
                 for (int l = 1; l <= 3; l++)
                 {
                     wheelReachHits[l] += w.WheelReachHits[l];
+                    wheelZeroHits[l] += w.WheelZeroHits[l];
                     wheelRtpWin[l] += w.WheelRtpWin[l];
                 }
 
@@ -603,6 +626,12 @@ class Program
             Console.WriteLine($"     - Mini Vortex:  {miniVortexZeroHits,6:N0} / {miniVortexHits,6:N0} ({((double)miniVortexZeroHits / Math.Max(1, miniVortexHits)),6:P2}) collected 0 targets | {((double)miniVortexZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, miniVortexZeroHits)):F1} spins");
             Console.WriteLine($"     - Mega Vortex:  {megaVortexZeroHits,6:N0} / {megaVortexHits,6:N0} ({((double)megaVortexZeroHits / Math.Max(1, megaVortexHits)),6:P2}) collected 0 targets | {((double)megaVortexZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, megaVortexZeroHits)):F1} spins");
             Console.WriteLine($"     - Ultra Vortex: {ultraVortexZeroHits,6:N0} / {ultraVortexHits,6:N0} ({((double)ultraVortexZeroHits / Math.Max(1, ultraVortexHits)),6:P2}) collected 0 targets | {((double)ultraVortexZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, ultraVortexZeroHits)):F1} spins");
+
+            Console.WriteLine($"\n3. X-WHEELS (Landed / Spun, but affected 0 target coins on grid):");
+            Console.WriteLine($"   * Overall X-Wheels: {xWheelZeroHits:N0} / {xWheelHits:N0} produced NOTHING ({((double)xWheelZeroHits / Math.Max(1, xWheelHits)):P2} of X-Wheel landings | {((double)xWheelZeroHits / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, xWheelZeroHits)):F1} spins)");
+            Console.WriteLine($"     - Wheel 1 (Mini Wheel):  {wheelZeroHits[1],6:N0} / {wheelReachHits[1],6:N0} ({((double)wheelZeroHits[1] / Math.Max(1, wheelReachHits[1])),6:P2}) affected 0 targets | {((double)wheelZeroHits[1] / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, wheelZeroHits[1])):F1} spins");
+            Console.WriteLine($"     - Wheel 2 (Mega Wheel):  {wheelZeroHits[2],6:N0} / {wheelReachHits[2],6:N0} ({((double)wheelZeroHits[2] / Math.Max(1, wheelReachHits[2])),6:P2}) affected 0 targets | {((double)wheelZeroHits[2] / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, wheelZeroHits[2])):F1} spins");
+            Console.WriteLine($"     - Wheel 3 (Ultra Wheel): {wheelZeroHits[3],6:N0} / {wheelReachHits[3],6:N0} ({((double)wheelZeroHits[3] / Math.Max(1, wheelReachHits[3])),6:P2}) affected 0 targets | {((double)wheelZeroHits[3] / totalSpins):P4} of spins | 1 in {((double)totalSpins / Math.Max(1, wheelZeroHits[3])):F1} spins");
             Console.WriteLine("=========================================================================================");
 
             Console.WriteLine("\n[Center Wild Wheel Bonus Breakdown]");
@@ -766,6 +795,8 @@ class Program
             int[] strikeZeroHits = { totalStrikeZeroHits, miniStrikeZeroHits, megaStrikeZeroHits, ultraStrikeZeroHits };
             int[] vortexTotalLandings = { totalVortexHits, miniVortexHits, megaVortexHits, ultraVortexHits };
             int[] vortexZeroHits = { totalVortexZeroHits, miniVortexZeroHits, megaVortexZeroHits, ultraVortexZeroHits };
+            int[] xWheelTotalLandings = { xWheelHits, wheelReachHits[1], wheelReachHits[2], wheelReachHits[3] };
+            int[] xWheelZeroHitsArray = { xWheelZeroHits, wheelZeroHits[1], wheelZeroHits[2], wheelZeroHits[3] };
 
             // Write results Excel
             Console.WriteLine($"\nWriting simulation results to: {resultsPath}");
@@ -802,6 +833,8 @@ class Program
                 strikeTotalLandings,
                 vortexZeroHits,
                 vortexTotalLandings,
+                xWheelZeroHitsArray,
+                xWheelTotalLandings,
                 wheelReachHits,
                 wheelRtpWin,
                 centerWheelPrizeHits,
@@ -997,6 +1030,8 @@ class Program
                         strikeTotalLandings,
                         vortexZeroHits,
                         vortexTotalLandings,
+                        xWheelZeroHitsArray,
+                        xWheelTotalLandings,
                         wheelReachHits,
                         wheelRtpWin,
                         centerWheelPrizeHits,
@@ -1701,6 +1736,8 @@ class Program
         int[] strikeTotalLandings,
         int[] vortexZeroHits,
         int[] vortexTotalLandings,
+        int[] xWheelZeroHits,
+        int[] xWheelTotalLandings,
         int[] wheelReachHits,
         long[] wheelRtpWin,
         Dictionary<string, int> centerWheelPrizeHits,
@@ -1829,6 +1866,10 @@ class Program
         AddSymbolEffRow("  * Mini Vortex (Ortho Range)", vortexTotalLandings[1], vortexZeroHits[1]);
         AddSymbolEffRow("  * Mega Vortex (Row & Col Range)", vortexTotalLandings[2], vortexZeroHits[2]);
         AddSymbolEffRow("  * Ultra Vortex (Full Grid)", vortexTotalLandings[3], vortexZeroHits[3]);
+        AddSymbolEffRow("X-Wheel (All 3 Wheels)", xWheelTotalLandings[0], xWheelZeroHits[0]);
+        AddSymbolEffRow("  * Wheel 1 (Mini Wheel)", xWheelTotalLandings[1], xWheelZeroHits[1]);
+        AddSymbolEffRow("  * Wheel 2 (Mega Wheel)", xWheelTotalLandings[2], xWheelZeroHits[2]);
+        AddSymbolEffRow("  * Wheel 3 (Ultra Wheel)", xWheelTotalLandings[3], xWheelZeroHits[3]);
         r += 2;
 
         // SECTION 3: CENTER WILD WHEEL BONUS PRIZE BREAKDOWN
