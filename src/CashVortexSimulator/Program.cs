@@ -47,8 +47,9 @@ public class CashVortexSimWorkerStats
     public Dictionary<string, int> CenterWheelPrizeHits { get; set; } = new();
     public Dictionary<string, long> CenterWheelPrizeWins { get; set; } = new();
 
-    public Dictionary<string, int> JackpotHits { get; set; } = new();
-    public Dictionary<string, long> JackpotWins { get; set; } = new();
+    public Dictionary<string, int> JackpotLandingHits { get; set; } = new();
+    public Dictionary<string, int> JackpotWonHits { get; set; } = new();
+    public Dictionary<string, long> JackpotWonWins { get; set; } = new();
 
     // Lock & Slingo Bonus stats
     public int LockAndSlingoTriggers { get; set; }
@@ -75,8 +76,9 @@ public class CashVortexSimWorkerStats
     {
         foreach (var jp in config.JackpotCoins)
         {
-            JackpotHits[jp.JackpotName] = 0;
-            JackpotWins[jp.JackpotName] = 0;
+            JackpotLandingHits[jp.JackpotName] = 0;
+            JackpotWonHits[jp.JackpotName] = 0;
+            JackpotWonWins[jp.JackpotName] = 0;
         }
     }
 
@@ -164,10 +166,16 @@ public class CashVortexSimWorkerStats
 
         foreach (var jpType in result.CompletedLineJackpots)
         {
-            if (jpType.Contains("Ultra", StringComparison.OrdinalIgnoreCase))
+            JackpotWonHits[jpType] = JackpotWonHits.GetValueOrDefault(jpType) + 1;
+            double mult = 5.0;
+            if (jpType.Contains("Mega", StringComparison.OrdinalIgnoreCase)) mult = 50.0;
+            else if (jpType.Contains("Ultra", StringComparison.OrdinalIgnoreCase))
             {
+                mult = 500.0;
                 UltraJackpotBaseGridHits++;
             }
+            long jpWin = (long)Math.Round(mult * 100);
+            JackpotWonWins[jpType] = JackpotWonWins.GetValueOrDefault(jpType) + jpWin;
         }
 
         for (int r = 0; r < 5; r++)
@@ -183,9 +191,7 @@ public class CashVortexSimWorkerStats
                             JackpotCoinHits++;
                             if (cell.JackpotType != null)
                             {
-                                JackpotHits[cell.JackpotType] = JackpotHits.GetValueOrDefault(cell.JackpotType) + 1;
-                                long jpWin = (long)Math.Round(cell.CashValue * 100);
-                                JackpotWins[cell.JackpotType] = JackpotWins.GetValueOrDefault(cell.JackpotType) + jpWin;
+                                JackpotLandingHits[cell.JackpotType] = JackpotLandingHits.GetValueOrDefault(cell.JackpotType) + 1;
                             }
                             break;
                         case SymbolType.MiniVortex:
@@ -453,12 +459,14 @@ class Program
             long[] lockAndSlingoLadderBoardWins = new long[13];
             long[] lockAndSlingoLadderPrizeWins = new long[13];
 
-            var jackpotHits = new Dictionary<string, int>();
-            var jackpotWins = new Dictionary<string, long>();
+            var jackpotLandingHits = new Dictionary<string, int>();
+            var jackpotWonHits = new Dictionary<string, int>();
+            var jackpotWonWins = new Dictionary<string, long>();
             foreach (var jp in config.JackpotCoins)
             {
-                jackpotHits[jp.JackpotName] = 0;
-                jackpotWins[jp.JackpotName] = 0;
+                jackpotLandingHits[jp.JackpotName] = 0;
+                jackpotWonHits[jp.JackpotName] = 0;
+                jackpotWonWins[jp.JackpotName] = 0;
             }
 
             long[] winDistHits = new long[WinRangeLabels.Length];
@@ -546,13 +554,17 @@ class Program
                     wheelPrizeWins[kvp.Key] = wheelPrizeWins.GetValueOrDefault(kvp.Key) + kvp.Value;
                 }
 
-                foreach (var kvp in w.JackpotHits)
+                foreach (var kvp in w.JackpotLandingHits)
                 {
-                    jackpotHits[kvp.Key] = jackpotHits.GetValueOrDefault(kvp.Key) + kvp.Value;
+                    jackpotLandingHits[kvp.Key] = jackpotLandingHits.GetValueOrDefault(kvp.Key) + kvp.Value;
                 }
-                foreach (var kvp in w.JackpotWins)
+                foreach (var kvp in w.JackpotWonHits)
                 {
-                    jackpotWins[kvp.Key] = jackpotWins.GetValueOrDefault(kvp.Key) + kvp.Value;
+                    jackpotWonHits[kvp.Key] = jackpotWonHits.GetValueOrDefault(kvp.Key) + kvp.Value;
+                }
+                foreach (var kvp in w.JackpotWonWins)
+                {
+                    jackpotWonWins[kvp.Key] = jackpotWonWins.GetValueOrDefault(kvp.Key) + kvp.Value;
                 }
             }
 
@@ -687,14 +699,34 @@ class Program
                 }
             }
 
-            Console.WriteLine("\n[Jackpot Breakdown]");
+            Console.WriteLine("\n[6. BASE GAME GRID JACKPOT COINS (LANDINGS VS. REALIZED WINS)]");
+            int totalJpLandings = 0;
+            int totalJpWon = 0;
+            long totalJpWonWin = 0;
             foreach (var jp in config.JackpotCoins)
             {
-                int hits = jackpotHits.GetValueOrDefault(jp.JackpotName);
-                long win = jackpotWins.GetValueOrDefault(jp.JackpotName);
-                double jpRtp = (double)win / (totalSpins * 100.0);
-                Console.WriteLine($"  - {jp.JackpotName,-6} Jackpot ({jp.Multiplier}x): Hits = {hits,6:N0} | RTP = {jpRtp,8:P4}");
+                int landings = jackpotLandingHits.GetValueOrDefault(jp.JackpotName);
+                int wonHits = jackpotWonHits.GetValueOrDefault(jp.JackpotName);
+                long wonWin = jackpotWonWins.GetValueOrDefault(jp.JackpotName);
+                double convRate = landings > 0 ? (double)wonHits / landings : 0;
+                double landingChance = (double)landings / totalSpins;
+                double rtp = (double)wonWin / (totalSpins * 100.0);
+                string oneInNLand = landings > 0 ? $"1 in {totalSpins / (double)landings,8:F1}" : "       -       ";
+                string oneInNWon = wonHits > 0 ? $"1 in {totalSpins / (double)wonHits,10:F1}" : "         -        ";
+
+                totalJpLandings += landings;
+                totalJpWon += wonHits;
+                totalJpWonWin += wonWin;
+
+                Console.WriteLine($"  - {jp.JackpotName,-6} ({jp.Multiplier,3}x): Landings = {landings,8:N0} ({landingChance,6:P2} | {oneInNLand}) | Won = {wonHits,7:N0} ({convRate,6:P2} conv | {oneInNWon}) | Realized RTP = {rtp,7:P4}");
             }
+            double totalConvRate = totalJpLandings > 0 ? (double)totalJpWon / totalJpLandings : 0;
+            double totalLandChance = (double)totalJpLandings / totalSpins;
+            double totalRtpJp = (double)totalJpWonWin / (totalSpins * 100.0);
+            string totalOneInNLand = totalJpLandings > 0 ? $"1 in {totalSpins / (double)totalJpLandings,8:F1}" : "       -       ";
+            string totalOneInNWon = totalJpWon > 0 ? $"1 in {totalSpins / (double)totalJpWon,10:F1}" : "         -        ";
+            Console.WriteLine("  ---------------------------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"  * TOTAL JACKPOT COINS: Landings = {totalJpLandings,8:N0} ({totalLandChance,6:P2} | {totalOneInNLand}) | Won = {totalJpWon,7:N0} ({totalConvRate,6:P2} conv | {totalOneInNWon}) | Realized RTP = {totalRtpJp,7:P4}");
 
             Console.WriteLine("\n[Win Distributions (Per Spin Multiplier Ranges)]");
             for (int i = 0; i < WinRangeLabels.Length; i++)
@@ -780,8 +812,9 @@ class Program
                 lockAndSlingoLadderWins,
                 lockAndSlingoLadderBoardWins,
                 lockAndSlingoLadderPrizeWins,
-                jackpotHits,
-                jackpotWins,
+                jackpotLandingHits,
+                jackpotWonHits,
+                jackpotWonWins,
                 winDistHits,
                 winDistWins,
                 ultraJpBaseGridHits,
@@ -974,8 +1007,9 @@ class Program
                         lockAndSlingoLadderWins,
                         lockAndSlingoLadderBoardWins,
                         lockAndSlingoLadderPrizeWins,
-                        jackpotHits,
-                        jackpotWins,
+                        jackpotLandingHits,
+                        jackpotWonHits,
+                        jackpotWonWins,
                         winDistHits,
                         winDistWins,
                         ultraJpBaseGridHits,
@@ -1677,8 +1711,9 @@ class Program
         long[] lockAndSlingoLadderWins,
         long[] lockAndSlingoLadderBoardWins,
         long[] lockAndSlingoLadderPrizeWins,
-        Dictionary<string, int> jackpotHits,
-        Dictionary<string, long> jackpotWins,
+        Dictionary<string, int> jackpotLandingHits,
+        Dictionary<string, int> jackpotWonHits,
+        Dictionary<string, long> jackpotWonWins,
         long[] winDistHits,
         long[] winDistWins,
         int ultraJpBaseGridHits,
@@ -1925,38 +1960,73 @@ class Program
         }
         r += 2;
 
-        // SECTION 6: JACKPOT
-        ws.Cell(r, 1).Value = "6. JACKPOT";
-        ws.Range(r, 1, r, 6).Merge().Style.Font.Bold = true;
-        ws.Range(r, 1, r, 6).Style.Font.FontSize = 11;
-        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        // SECTION 6: BASE GAME GRID JACKPOT COINS (LANDINGS VS. REALIZED WINS)
+        ws.Cell(r, 1).Value = "6. BASE GAME GRID JACKPOT COINS (LANDINGS VS. REALIZED WINS)";
+        ws.Range(r, 1, r, 9).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 9).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 9).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
         r++;
 
         ws.Cell(r, 1).Value = "Jackpot Tier";
         ws.Cell(r, 2).Value = "Multiplier";
-        ws.Cell(r, 3).Value = "Total Hits";
-        ws.Cell(r, 4).Value = "Total Win Amount";
-        ws.Cell(r, 5).Value = "Contribution RTP %";
-        ws.Cell(r, 6).Value = "1 in N Spins";
-        ws.Range(r, 1, r, 6).Style.Font.Bold = true;
-        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
-        ws.Range(r, 1, r, 6).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        ws.Cell(r, 3).Value = "Grid Landings";
+        ws.Cell(r, 4).Value = "Landing Chance %";
+        ws.Cell(r, 5).Value = "1 in N Spins (Landing)";
+        ws.Cell(r, 6).Value = "Completed Line Wins";
+        ws.Cell(r, 7).Value = "Win Conversion %";
+        ws.Cell(r, 8).Value = "1 in N Spins (Won)";
+        ws.Cell(r, 9).Value = "Realized RTP %";
+        ws.Range(r, 1, r, 9).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 9).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 9).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
         r++;
+
+        int totalGridLandings = 0;
+        int totalGridWon = 0;
+        long totalGridWonWin = 0;
 
         foreach (var jp in config.JackpotCoins)
         {
-            int hits = jackpotHits.GetValueOrDefault(jp.JackpotName);
-            long win = jackpotWins.GetValueOrDefault(jp.JackpotName);
-            double jpRtp = (double)win / (totalSpins * 100.0);
+            int landings = jackpotLandingHits.GetValueOrDefault(jp.JackpotName);
+            int wonHits = jackpotWonHits.GetValueOrDefault(jp.JackpotName);
+            long wonWin = jackpotWonWins.GetValueOrDefault(jp.JackpotName);
+            double convRate = landings > 0 ? (double)wonHits / landings : 0;
+            double landChance = (double)landings / totalSpins;
+            double rtp = (double)wonWin / (totalSpins * 100.0);
+
+            totalGridLandings += landings;
+            totalGridWon += wonHits;
+            totalGridWonWin += wonWin;
 
             ws.Cell(r, 1).Value = jp.JackpotName;
             ws.Cell(r, 2).Value = $"{jp.Multiplier}x";
-            ws.Cell(r, 3).Value = hits;
-            ws.Cell(r, 4).Value = win;
-            ws.Cell(r, 5).Value = $"{jpRtp:P4}";
-            ws.Cell(r, 6).Value = hits > 0 ? $"1 in {totalSpins / (double)hits:F1}" : "-";
+            ws.Cell(r, 3).Value = landings;
+            ws.Cell(r, 4).Value = $"{landChance:P2}";
+            ws.Cell(r, 5).Value = landings > 0 ? $"1 in {totalSpins / (double)landings:F1}" : "-";
+            ws.Cell(r, 6).Value = wonHits;
+            ws.Cell(r, 7).Value = $"{convRate:P2}";
+            ws.Cell(r, 8).Value = wonHits > 0 ? $"1 in {totalSpins / (double)wonHits:F1}" : "-";
+            ws.Cell(r, 9).Value = $"{rtp:P4}";
             r++;
         }
+
+        // Summary Total Row
+        double totConvRate = totalGridLandings > 0 ? (double)totalGridWon / totalGridLandings : 0;
+        double totLandChance = (double)totalGridLandings / totalSpins;
+        double totRtp = (double)totalGridWonWin / (totalSpins * 100.0);
+
+        ws.Cell(r, 1).Value = "TOTAL JACKPOT COINS";
+        ws.Cell(r, 2).Value = "-";
+        ws.Cell(r, 3).Value = totalGridLandings;
+        ws.Cell(r, 4).Value = $"{totLandChance:P2}";
+        ws.Cell(r, 5).Value = totalGridLandings > 0 ? $"1 in {totalSpins / (double)totalGridLandings:F1}" : "-";
+        ws.Cell(r, 6).Value = totalGridWon;
+        ws.Cell(r, 7).Value = $"{totConvRate:P2}";
+        ws.Cell(r, 8).Value = totalGridWon > 0 ? $"1 in {totalSpins / (double)totalGridWon:F1}" : "-";
+        ws.Cell(r, 9).Value = $"{totRtp:P4}";
+        ws.Range(r, 1, r, 9).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 9).Style.Fill.BackgroundColor = XLColor.FromArgb(232, 245, 233);
+        r++;
         r += 2;
 
         // SECTION 7: WIN DISTRIBUTIONS
