@@ -56,6 +56,9 @@ public class TriggeredPotBonus
     public double LadderPrize { get; set; }
     public long BaseBoardWinCents { get; set; }
     public long LadderPrizeWinCents { get; set; }
+    public int UltraJackpotBonusGridHits { get; set; }
+    public int UltraJackpotBonusFullHouseHits { get; set; }
+    public int UltraJackpotBonusXWheelHits { get; set; }
     public bool MinWinApplied { get; set; }
     public Dictionary<int, long> ColossalSymbolWins { get; set; } = new();
     public Dictionary<int, int> ColossalSymbolHits { get; set; } = new();

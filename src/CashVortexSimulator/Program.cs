@@ -63,6 +63,14 @@ public class CashVortexSimWorkerStats
     public long[] WinDistributionHits { get; set; } = new long[12];
     public long[] WinDistributionTotalWin { get; set; } = new long[12];
 
+    // Ultra Jackpot (Top Win: 500x) Breakdown
+    public int UltraJackpotBaseGridHits { get; set; }
+    public int UltraJackpotCenterWheelHits { get; set; }
+    public int UltraJackpotXWheelHits { get; set; }
+    public int UltraJackpotBonusGridHits { get; set; }
+    public int UltraJackpotBonusFullHouseHits { get; set; }
+    public int UltraJackpotBonusXWheelHits { get; set; }
+
     public CashVortexSimWorkerStats(CashVortexConfig config)
     {
         foreach (var jp in config.JackpotCoins)
@@ -101,6 +109,10 @@ public class CashVortexSimWorkerStats
                 string prizeName = pot.BonusName.Substring("CenterWheel:".Length);
                 CenterWheelPrizeHits[prizeName] = CenterWheelPrizeHits.GetValueOrDefault(prizeName) + 1;
                 CenterWheelPrizeWins[prizeName] = CenterWheelPrizeWins.GetValueOrDefault(prizeName) + pot.Win;
+                if (prizeName.Contains("Ultra Jackpot", StringComparison.OrdinalIgnoreCase))
+                {
+                    UltraJackpotCenterWheelHits++;
+                }
             }
             else if (pot.BonusName.StartsWith("XWheel:"))
             {
@@ -118,6 +130,11 @@ public class CashVortexSimWorkerStats
                         string prizeKey = $"{wStr}:{prizeName}";
                         WheelPrizeHits[prizeKey] = WheelPrizeHits.GetValueOrDefault(prizeKey) + 1;
                         WheelPrizeWins[prizeKey] = WheelPrizeWins.GetValueOrDefault(prizeKey) + pot.Win;
+
+                        if (prizeName.Contains("Ultra Jackpot", StringComparison.OrdinalIgnoreCase))
+                        {
+                            UltraJackpotXWheelHits++;
+                        }
                     }
                 }
             }
@@ -138,6 +155,10 @@ public class CashVortexSimWorkerStats
                 {
                     LockAndSlingoFullHouses++;
                 }
+
+                UltraJackpotBonusGridHits += pot.UltraJackpotBonusGridHits;
+                UltraJackpotBonusFullHouseHits += pot.UltraJackpotBonusFullHouseHits;
+                UltraJackpotBonusXWheelHits += pot.UltraJackpotBonusXWheelHits;
             }
         }
 
@@ -157,6 +178,10 @@ public class CashVortexSimWorkerStats
                                 JackpotHits[cell.JackpotType] = JackpotHits.GetValueOrDefault(cell.JackpotType) + 1;
                                 long jpWin = (long)Math.Round(cell.CashValue * 100);
                                 JackpotWins[cell.JackpotType] = JackpotWins.GetValueOrDefault(cell.JackpotType) + jpWin;
+                                if (cell.JackpotType.Contains("Ultra", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    UltraJackpotBaseGridHits++;
+                                }
                             }
                             break;
                         case SymbolType.MiniVortex:
@@ -435,6 +460,13 @@ class Program
             long[] winDistHits = new long[WinRangeLabels.Length];
             long[] winDistWins = new long[WinRangeLabels.Length];
 
+            int ultraJpBaseGridHits = 0;
+            int ultraJpCenterWheelHits = 0;
+            int ultraJpXWheelHits = 0;
+            int ultraJpBonusGridHits = 0;
+            int ultraJpBonusFullHouseHits = 0;
+            int ultraJpBonusXWheelHits = 0;
+
             foreach (var w in workers)
             {
                 totalWin += w.TotalWin;
@@ -447,6 +479,13 @@ class Program
                     winDistHits[i] += w.WinDistributionHits[i];
                     winDistWins[i] += w.WinDistributionTotalWin[i];
                 }
+
+                ultraJpBaseGridHits += w.UltraJackpotBaseGridHits;
+                ultraJpCenterWheelHits += w.UltraJackpotCenterWheelHits;
+                ultraJpXWheelHits += w.UltraJackpotXWheelHits;
+                ultraJpBonusGridHits += w.UltraJackpotBonusGridHits;
+                ultraJpBonusFullHouseHits += w.UltraJackpotBonusFullHouseHits;
+                ultraJpBonusXWheelHits += w.UltraJackpotBonusXWheelHits;
 
                 jackpotCoinHits += w.JackpotCoinHits;
                 miniVortexHits += w.MiniVortexHits;
@@ -664,6 +703,29 @@ class Program
                 Console.WriteLine($"  - {WinRangeLabels[i],-14}: Hits = {hits,10:N0} ({freq,7:P2}) | {oneInN} | RTP = {rtp,7:P4}");
             }
 
+            int totalUltraJpHits = ultraJpBaseGridHits + ultraJpCenterWheelHits + ultraJpXWheelHits + ultraJpBonusGridHits + ultraJpBonusFullHouseHits + ultraJpBonusXWheelHits;
+            double totalUltraJpRtp = (totalUltraJpHits * 500.0) / totalSpins;
+
+            Console.WriteLine("\n[8. TOP WIN (ULTRA JACKPOT 500x) BREAKDOWN]");
+            void PrintUltraJpConsoleRow(string srcName, int hits, double featTotal, string featTotalName)
+            {
+                double featRate = featTotal > 0 ? (double)hits / featTotal : 0;
+                double spinChance = (double)hits / totalSpins;
+                double rtp = (hits * 500.0) / totalSpins;
+                string oneInN = hits > 0 ? $"1 in {totalSpins / (double)hits,10:F1}" : "         -        ";
+                Console.WriteLine($"  - {srcName,-42}: Hits = {hits,6:N0} | {featTotalName} = {featRate,6:P2} | Spin Chance = {spinChance,7:P4} | {oneInN} | RTP = {rtp,7:P4}");
+            }
+
+            PrintUltraJpConsoleRow("1. Base Game Grid (Jackpot Coin)", ultraJpBaseGridHits, jackpotCoinHits, "Coin Rate ");
+            PrintUltraJpConsoleRow("2. Center Wild Wheel Bonus", ultraJpCenterWheelHits, centerWheelTriggers, "Wheel Rate");
+            PrintUltraJpConsoleRow("3. Reel-Top X-Wheel (Wheel 3)", ultraJpXWheelHits, wheelReachHits[3], "Wheel3 Rate");
+            PrintUltraJpConsoleRow("4. Lock & Slingo™ (Bonus Grid Coin)", ultraJpBonusGridHits, lockAndSlingoTriggers, "Bonus Rate");
+            PrintUltraJpConsoleRow("5. Lock & Slingo™ (Full House 12 Lines)", ultraJpBonusFullHouseHits, lockAndSlingoTriggers, "Bonus Rate");
+            PrintUltraJpConsoleRow("6. Lock & Slingo™ (Bonus X-Wheel 3)", ultraJpBonusXWheelHits, lockAndSlingoTriggers, "Bonus Rate");
+            Console.WriteLine("  ---------------------------------------------------------------------------------------------------------------------------------------");
+            string totalUjOneInN = totalUltraJpHits > 0 ? $"1 in {totalSpins / (double)totalUltraJpHits,10:F1}" : "         -        ";
+            Console.WriteLine($"  * OVERALL TOP WIN (ULTRA JACKPOT 500x)      : Hits = {totalUltraJpHits,6:N0} | Overall Spin Chance = {((double)totalUltraJpHits / totalSpins),7:P4} | {totalUjOneInN} | RTP = {totalUltraJpRtp,7:P4}");
+
             int[] strikeTotalLandings = { totalStrikeHits, miniStrikeHits, megaStrikeHits, ultraStrikeHits };
             int[] strikeZeroHits = { totalStrikeZeroHits, miniStrikeZeroHits, megaStrikeZeroHits, ultraStrikeZeroHits };
             int[] vortexTotalLandings = { totalVortexHits, miniVortexHits, megaVortexHits, ultraVortexHits };
@@ -717,7 +779,13 @@ class Program
                 jackpotHits,
                 jackpotWins,
                 winDistHits,
-                winDistWins);
+                winDistWins,
+                ultraJpBaseGridHits,
+                ultraJpCenterWheelHits,
+                ultraJpXWheelHits,
+                ultraJpBonusGridHits,
+                ultraJpBonusFullHouseHits,
+                ultraJpBonusXWheelHits);
 
             // Add detailed worksheets
             var wsCenter = workbook.Worksheets.Add("Center Wheel Details");
@@ -905,7 +973,13 @@ class Program
                         jackpotHits,
                         jackpotWins,
                         winDistHits,
-                        winDistWins);
+                        winDistWins,
+                        ultraJpBaseGridHits,
+                        ultraJpCenterWheelHits,
+                        ultraJpXWheelHits,
+                        ultraJpBonusGridHits,
+                        ultraJpBonusFullHouseHits,
+                        ultraJpBonusXWheelHits);
 
                     configWorkbook.Save();
                     Console.WriteLine($"[SUCCESS] Game config 'Stats' tab successfully updated!");
@@ -1602,7 +1676,13 @@ class Program
         Dictionary<string, int> jackpotHits,
         Dictionary<string, long> jackpotWins,
         long[] winDistHits,
-        long[] winDistWins)
+        long[] winDistWins,
+        int ultraJpBaseGridHits,
+        int ultraJpCenterWheelHits,
+        int ultraJpXWheelHits,
+        int ultraJpBonusGridHits,
+        int ultraJpBonusFullHouseHits,
+        int ultraJpBonusXWheelHits)
     {
         // Title Banner
         ws.Cell("A1").Value = "CASH VORTEX: TRIPLE POWER";
@@ -1908,6 +1988,65 @@ class Program
             ws.Cell(r, 6).Value = $"{rtp:P4}";
             r++;
         }
+        r += 2;
+
+        // SECTION 8: TOP WIN (ULTRA JACKPOT 500x)
+        ws.Cell(r, 1).Value = "8. TOP WIN (ULTRA JACKPOT 500x)";
+        ws.Range(r, 1, r, 7).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 7).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        r++;
+
+        ws.Cell(r, 1).Value = "Winning Feature / Source";
+        ws.Cell(r, 2).Value = "Multiplier";
+        ws.Cell(r, 3).Value = "Total Hits";
+        ws.Cell(r, 4).Value = "Feature Trigger Rate %";
+        ws.Cell(r, 5).Value = "Total Spin Chance %";
+        ws.Cell(r, 6).Value = "1 in N Spins";
+        ws.Cell(r, 7).Value = "Contribution RTP %";
+        ws.Range(r, 1, r, 7).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 7).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        r++;
+
+        void AddTopWinRow(string source, int hits, double featureTotal)
+        {
+            double featRate = featureTotal > 0 ? (double)hits / featureTotal : 0;
+            double spinChance = (double)hits / totalSpins;
+            double rtp = (hits * 500.0) / totalSpins;
+
+            ws.Cell(r, 1).Value = source;
+            ws.Cell(r, 2).Value = "500x";
+            ws.Cell(r, 3).Value = hits;
+            ws.Cell(r, 4).Value = $"{featRate:P2}";
+            ws.Cell(r, 5).Value = $"{spinChance:P4}";
+            ws.Cell(r, 6).Value = hits > 0 ? $"1 in {totalSpins / (double)hits:F1}" : "-";
+            ws.Cell(r, 7).Value = $"{rtp:P4}";
+            r++;
+        }
+
+        AddTopWinRow("1. Base Game Grid (Jackpot Coin Landing)", ultraJpBaseGridHits, jackpotCoinHits);
+        AddTopWinRow("2. Center Wild Wheel Bonus", ultraJpCenterWheelHits, centerWheelTriggers);
+        AddTopWinRow("3. Reel-Top X-Wheel (Base Game Wheel 3)", ultraJpXWheelHits, wheelReachHits[3]);
+        AddTopWinRow("4. Lock & Slingo™ (Bonus Grid Coin Landing)", ultraJpBonusGridHits, lockAndSlingoTriggers);
+        AddTopWinRow("5. Lock & Slingo™ (Full House / 12 Lines)", ultraJpBonusFullHouseHits, lockAndSlingoTriggers);
+        AddTopWinRow("6. Lock & Slingo™ (Bonus X-Wheel 3)", ultraJpBonusXWheelHits, lockAndSlingoTriggers);
+
+        // Summary Total Row
+        int totalTopWinHits = ultraJpBaseGridHits + ultraJpCenterWheelHits + ultraJpXWheelHits + ultraJpBonusGridHits + ultraJpBonusFullHouseHits + ultraJpBonusXWheelHits;
+        double totalTopWinSpinChance = (double)totalTopWinHits / totalSpins;
+        double totalTopWinRtp = (totalTopWinHits * 500.0) / totalSpins;
+
+        ws.Cell(r, 1).Value = "OVERALL TOP WIN (ULTRA JACKPOT 500x)";
+        ws.Cell(r, 2).Value = "500x";
+        ws.Cell(r, 3).Value = totalTopWinHits;
+        ws.Cell(r, 4).Value = "-";
+        ws.Cell(r, 5).Value = $"{totalTopWinSpinChance:P4}";
+        ws.Cell(r, 6).Value = totalTopWinHits > 0 ? $"1 in {totalSpins / (double)totalTopWinHits:F1}" : "-";
+        ws.Cell(r, 7).Value = $"{totalTopWinRtp:P4}";
+        ws.Range(r, 1, r, 7).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = XLColor.FromArgb(255, 242, 204); // Highlight warm gold
+        r++;
 
         ws.Columns().AdjustToContents();
     }
