@@ -60,6 +60,8 @@ public class CashVortexSimWorkerStats
     public long[] LockAndSlingoLadderWins { get; set; } = new long[13];
     public long[] LockAndSlingoLadderBoardWins { get; set; } = new long[13];
     public long[] LockAndSlingoLadderPrizeWins { get; set; } = new long[13];
+    public long[] WinDistributionHits { get; set; } = new long[12];
+    public long[] WinDistributionTotalWin { get; set; } = new long[12];
 
     public CashVortexSimWorkerStats(CashVortexConfig config)
     {
@@ -73,6 +75,11 @@ public class CashVortexSimWorkerStats
     public void Record(SpinResult result, CashVortexSlotEngine engine)
     {
         TotalWin += result.TotalWin;
+
+        double winX = result.TotalWin / 100.0;
+        int rangeIdx = Program.GetWinRangeIndex(winX);
+        WinDistributionHits[rangeIdx]++;
+        WinDistributionTotalWin[rangeIdx] += result.TotalWin;
 
         if (result.TotalWin > 0)
         {
@@ -186,6 +193,38 @@ public class CashVortexSimWorkerStats
 
 class Program
 {
+    public static readonly string[] WinRangeLabels = new string[]
+    {
+        "x = 0",
+        "0 < x <= 1",
+        "1 < x <= 2",
+        "2 < x <= 5",
+        "5 < x <= 10",
+        "10 < x <= 15",
+        "15 < x <= 20",
+        "20 < x <= 50",
+        "50 < x <= 100",
+        "100 < x <= 200",
+        "200 < x <= 500",
+        "x > 500"
+    };
+
+    public static int GetWinRangeIndex(double winX)
+    {
+        if (winX <= 0.0) return 0;
+        if (winX <= 1.0) return 1;
+        if (winX <= 2.0) return 2;
+        if (winX <= 5.0) return 3;
+        if (winX <= 10.0) return 4;
+        if (winX <= 15.0) return 5;
+        if (winX <= 20.0) return 6;
+        if (winX <= 50.0) return 7;
+        if (winX <= 100.0) return 8;
+        if (winX <= 200.0) return 9;
+        if (winX <= 500.0) return 10;
+        return 11;
+    }
+
     static void Main(string[] args)
     {
         Console.WriteLine("=========================================================================================");
@@ -393,12 +432,21 @@ class Program
                 jackpotWins[jp.JackpotName] = 0;
             }
 
+            long[] winDistHits = new long[WinRangeLabels.Length];
+            long[] winDistWins = new long[WinRangeLabels.Length];
+
             foreach (var w in workers)
             {
                 totalWin += w.TotalWin;
                 totalLineWin += w.TotalLineWin;
                 winSpins += w.WinSpins;
                 totalSlingoLines += w.TotalSlingoLinesCompleted;
+
+                for (int i = 0; i < WinRangeLabels.Length; i++)
+                {
+                    winDistHits[i] += w.WinDistributionHits[i];
+                    winDistWins[i] += w.WinDistributionTotalWin[i];
+                }
 
                 jackpotCoinHits += w.JackpotCoinHits;
                 miniVortexHits += w.MiniVortexHits;
@@ -605,6 +653,17 @@ class Program
                 Console.WriteLine($"  - {jp.JackpotName,-6} Jackpot ({jp.Multiplier}x): Hits = {hits,6:N0} | RTP = {jpRtp,8:P4}");
             }
 
+            Console.WriteLine("\n[Win Distributions (Per Spin Multiplier Ranges)]");
+            for (int i = 0; i < WinRangeLabels.Length; i++)
+            {
+                long hits = winDistHits[i];
+                long win = winDistWins[i];
+                double freq = (double)hits / totalSpins;
+                double rtp = (double)win / (totalSpins * 100.0);
+                string oneInN = hits > 0 ? $"1 in {totalSpins / (double)hits,8:F1}" : "       -       ";
+                Console.WriteLine($"  - {WinRangeLabels[i],-14}: Hits = {hits,10:N0} ({freq,7:P2}) | {oneInN} | RTP = {rtp,7:P4}");
+            }
+
             int[] strikeTotalLandings = { totalStrikeHits, miniStrikeHits, megaStrikeHits, ultraStrikeHits };
             int[] strikeZeroHits = { totalStrikeZeroHits, miniStrikeZeroHits, megaStrikeZeroHits, ultraStrikeZeroHits };
             int[] vortexTotalLandings = { totalVortexHits, miniVortexHits, megaVortexHits, ultraVortexHits };
@@ -656,7 +715,9 @@ class Program
                 lockAndSlingoLadderBoardWins,
                 lockAndSlingoLadderPrizeWins,
                 jackpotHits,
-                jackpotWins);
+                jackpotWins,
+                winDistHits,
+                winDistWins);
 
             // Add detailed worksheets
             var wsCenter = workbook.Worksheets.Add("Center Wheel Details");
@@ -842,7 +903,9 @@ class Program
                         lockAndSlingoLadderBoardWins,
                         lockAndSlingoLadderPrizeWins,
                         jackpotHits,
-                        jackpotWins);
+                        jackpotWins,
+                        winDistHits,
+                        winDistWins);
 
                     configWorkbook.Save();
                     Console.WriteLine($"[SUCCESS] Game config 'Stats' tab successfully updated!");
@@ -1537,10 +1600,12 @@ class Program
         long[] lockAndSlingoLadderBoardWins,
         long[] lockAndSlingoLadderPrizeWins,
         Dictionary<string, int> jackpotHits,
-        Dictionary<string, long> jackpotWins)
+        Dictionary<string, long> jackpotWins,
+        long[] winDistHits,
+        long[] winDistWins)
     {
         // Title Banner
-        ws.Cell("A1").Value = "CASH VORTEX: TRIPLE POWER – SIMULATION & MATHEMATICAL STATS DASHBOARD";
+        ws.Cell("A1").Value = "CASH VORTEX: TRIPLE POWER";
         ws.Range("A1:G1").Merge();
         ws.Range("A1:G1").Style.Font.Bold = true;
         ws.Range("A1:G1").Style.Font.FontSize = 14;
@@ -1806,6 +1871,41 @@ class Program
             ws.Cell(r, 4).Value = win;
             ws.Cell(r, 5).Value = $"{jpRtp:P4}";
             ws.Cell(r, 6).Value = hits > 0 ? $"1 in {totalSpins / (double)hits:F1}" : "-";
+            r++;
+        }
+        r += 2;
+
+        // SECTION 7: WIN DISTRIBUTIONS
+        ws.Cell(r, 1).Value = "7. WIN DISTRIBUTIONS";
+        ws.Range(r, 1, r, 6).Merge().Style.Font.Bold = true;
+        ws.Range(r, 1, r, 6).Style.Font.FontSize = 11;
+        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(215, 228, 242);
+        r++;
+
+        ws.Cell(r, 1).Value = "Win Range Bracket";
+        ws.Cell(r, 2).Value = "Spins / Hits";
+        ws.Cell(r, 3).Value = "Hit Frequency %";
+        ws.Cell(r, 4).Value = "1 in N Spins";
+        ws.Cell(r, 5).Value = "Total Win Amount";
+        ws.Cell(r, 6).Value = "Contribution RTP %";
+        ws.Range(r, 1, r, 6).Style.Font.Bold = true;
+        ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = XLColor.FromArgb(238, 243, 250);
+        ws.Range(r, 1, r, 6).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+        r++;
+
+        for (int i = 0; i < WinRangeLabels.Length; i++)
+        {
+            long hits = winDistHits[i];
+            long win = winDistWins[i];
+            double freq = (double)hits / totalSpins;
+            double rtp = (double)win / (totalSpins * 100.0);
+
+            ws.Cell(r, 1).Value = WinRangeLabels[i];
+            ws.Cell(r, 2).Value = hits;
+            ws.Cell(r, 3).Value = $"{freq:P2}";
+            ws.Cell(r, 4).Value = hits > 0 ? $"1 in {totalSpins / (double)hits:F1}" : "-";
+            ws.Cell(r, 5).Value = win;
+            ws.Cell(r, 6).Value = $"{rtp:P4}";
             r++;
         }
 
