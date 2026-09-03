@@ -178,13 +178,15 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     pct_pace_rate = (total_logged / expected_pace_target) * 100.0 if expected_pace_target > 0 else 0.0
     total_runs = sum(m["runs"] for m in active)
     
-    # Extract superlatives
-    pace_setter = by_pct[0] if by_pct else None
-    road_warrior = max(active, key=lambda x: (x["runs"], x["distance"])) if active else None
+    # Goal Setter: Medium & Long Distance Target Runners (Monthly Goal >= 70 km)
+    mid_long_active = [m for m in active if m["monthly_target"] >= 70.0]
+    pace_setter = max(mid_long_active, key=lambda x: (x["pct_weekly"], x["distance"])) if mid_long_active else (by_pct[0] if by_pct else None)
     
-    # Low-target category hero (monthly target <= 50 km)
+    # Rising Swift: Low-target Category Runners (Monthly Goal <= 50 km)
     low_target_active = [m for m in active if m["monthly_target"] <= 50.0]
     rising_swift = max(low_target_active, key=lambda x: (x["pct_weekly"], x["distance"])) if low_target_active else None
+    
+    road_warrior = max(active, key=lambda x: (x["runs"], x["distance"])) if active else None
     
     # Elev climber
     def parse_elev(e_str):
