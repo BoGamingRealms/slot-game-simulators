@@ -52,10 +52,29 @@
         .badge-slight { background: #fef9c3; color: #a16207; }
         .badge-behind { background: #fee2e2; color: #b91c1c; }
         .badge-zero { background: #f1f5f9; color: #64748b; }
-        .progress-bar-container {
-            width: 55px; background: #e2e8f0; border-radius: 6px; height: 5px; display: inline-block; vertical-align: middle; margin-left: 4px; overflow: hidden;
+        .progress-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            margin: 0 auto;
         }
-        .progress-bar { height: 100%; background: #3b82f6; border-radius: 6px; }
+        .progress-val {
+            font-size: 8.5px;
+            font-weight: 700;
+            line-height: 1.1;
+            text-align: center;
+        }
+        .progress-bar-container {
+            width: 48px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            height: 4.5px;
+            overflow: hidden;
+            display: block;
+        }
+        .progress-bar { height: 100%; background: #3b82f6; border-radius: 4px; }
         .progress-bar.green { background: #22c55e; }
         .progress-bar.blue { background: #3b82f6; }
         .progress-bar.yellow { background: #eab308; }
@@ -157,8 +176,10 @@
                 <td class="text-right" style="font-weight: 700;">10.0 km</td>
                 <td class="text-right">25 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">40.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar green" style="width: 40%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">40.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar green" style="width: 40%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">160.0%</td>
                 <td class="text-center">2</td>
@@ -174,8 +195,10 @@
                 <td class="text-right" style="font-weight: 700;">23.0 km</td>
                 <td class="text-right">100 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">23.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar green" style="width: 23%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">23.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar green" style="width: 23%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">92.0%</td>
                 <td class="text-center">1</td>
@@ -191,8 +214,10 @@
                 <td class="text-right" style="font-weight: 700;">17.0 km</td>
                 <td class="text-right">75 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">22.7%</span>
-                    <div class="progress-bar-container"><div class="progress-bar green" style="width: 22%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">22.7%</span>
+                        <div class="progress-bar-container"><div class="progress-bar green" style="width: 22%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">90.7%</td>
                 <td class="text-center">3</td>
@@ -208,8 +233,10 @@
                 <td class="text-right" style="font-weight: 700;">40.0 km</td>
                 <td class="text-right">200 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">20.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar yellow" style="width: 20%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">20.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar yellow" style="width: 20%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">80.0%</td>
                 <td class="text-center">2</td>
@@ -225,8 +252,10 @@
                 <td class="text-right" style="font-weight: 700;">17.6 km</td>
                 <td class="text-right">100 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">17.6%</span>
-                    <div class="progress-bar-container"><div class="progress-bar yellow" style="width: 17%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">17.6%</span>
+                        <div class="progress-bar-container"><div class="progress-bar yellow" style="width: 17%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">70.4%</td>
                 <td class="text-center">1</td>
@@ -242,8 +271,10 @@
                 <td class="text-right" style="font-weight: 700;">8.0 km</td>
                 <td class="text-right">50 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">16.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar yellow" style="width: 16%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">16.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar yellow" style="width: 16%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">64.0%</td>
                 <td class="text-center">1</td>
@@ -259,8 +290,10 @@
                 <td class="text-right" style="font-weight: 700;">8.0 km</td>
                 <td class="text-right">50 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">16.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar yellow" style="width: 16%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">16.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar yellow" style="width: 16%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">64.0%</td>
                 <td class="text-center">1</td>
@@ -276,8 +309,10 @@
                 <td class="text-right" style="font-weight: 700;">10.6 km</td>
                 <td class="text-right">75 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">14.1%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 14%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">14.1%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 14%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">56.5%</td>
                 <td class="text-center">2</td>
@@ -293,8 +328,10 @@
                 <td class="text-right" style="font-weight: 700;">10.1 km</td>
                 <td class="text-right">75 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">13.5%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">13.5%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">53.9%</td>
                 <td class="text-center">1</td>
@@ -310,8 +347,10 @@
                 <td class="text-right" style="font-weight: 700;">10.0 km</td>
                 <td class="text-right">75 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">13.3%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">13.3%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">53.3%</td>
                 <td class="text-center">1</td>
@@ -327,8 +366,10 @@
                 <td class="text-right" style="font-weight: 700;">13.3 km</td>
                 <td class="text-right">100 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">13.3%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">13.3%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">53.2%</td>
                 <td class="text-center">1</td>
@@ -344,8 +385,10 @@
                 <td class="text-right" style="font-weight: 700;">31.1 km</td>
                 <td class="text-right">250 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">12.4%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">12.4%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">49.8%</td>
                 <td class="text-center">3</td>
@@ -361,8 +404,10 @@
                 <td class="text-right" style="font-weight: 700;">12.3 km</td>
                 <td class="text-right">100 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">12.3%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">12.3%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">49.2%</td>
                 <td class="text-center">1</td>
@@ -378,8 +423,10 @@
                 <td class="text-right" style="font-weight: 700;">24.2 km</td>
                 <td class="text-right">200 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">12.1%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">12.1%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">48.4%</td>
                 <td class="text-center">3</td>
@@ -395,8 +442,10 @@
                 <td class="text-right" style="font-weight: 700;">3.0 km</td>
                 <td class="text-right">25 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">12.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">12.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">48.0%</td>
                 <td class="text-center">1</td>
@@ -412,8 +461,10 @@
                 <td class="text-right" style="font-weight: 700;">3.0 km</td>
                 <td class="text-right">25 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">12.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">12.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">48.0%</td>
                 <td class="text-center">1</td>
@@ -429,8 +480,10 @@
                 <td class="text-right" style="font-weight: 700;">22.9 km</td>
                 <td class="text-right">200 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">11.4%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 11%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">11.4%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 11%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">45.8%</td>
                 <td class="text-center">4</td>
@@ -446,8 +499,10 @@
                 <td class="text-right" style="font-weight: 700;">8.0 km</td>
                 <td class="text-right">70 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">11.4%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 11%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">11.4%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 11%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">45.7%</td>
                 <td class="text-center">1</td>
@@ -463,8 +518,10 @@
                 <td class="text-right" style="font-weight: 700;">10.0 km</td>
                 <td class="text-right">100 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">10.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 10%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">10.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 10%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">40.0%</td>
                 <td class="text-center">1</td>
@@ -480,8 +537,10 @@
                 <td class="text-right" style="font-weight: 700;">5.0 km</td>
                 <td class="text-right">50 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">10.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 10%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">10.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 10%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">40.0%</td>
                 <td class="text-center">1</td>
@@ -497,8 +556,10 @@
                 <td class="text-right" style="font-weight: 700;">19.5 km</td>
                 <td class="text-right">200 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">9.8%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 9%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">9.8%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 9%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">39.0%</td>
                 <td class="text-center">4</td>
@@ -514,8 +575,10 @@
                 <td class="text-right" style="font-weight: 700;">9.3 km</td>
                 <td class="text-right">100 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">9.3%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 9%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">9.3%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 9%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">37.2%</td>
                 <td class="text-center">1</td>
@@ -531,8 +594,10 @@
                 <td class="text-right" style="font-weight: 700;">6.2 km</td>
                 <td class="text-right">75 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">8.3%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 8%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">8.3%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 8%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">33.1%</td>
                 <td class="text-center">1</td>
@@ -548,8 +613,10 @@
                 <td class="text-right" style="font-weight: 700;">2.0 km</td>
                 <td class="text-right">25 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">8.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 8%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">8.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 8%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">32.0%</td>
                 <td class="text-center">1</td>
@@ -565,8 +632,10 @@
                 <td class="text-right" style="font-weight: 700;">14.7 km</td>
                 <td class="text-right">200 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">7.3%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 7%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">7.3%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 7%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">29.4%</td>
                 <td class="text-center">2</td>
@@ -582,8 +651,10 @@
                 <td class="text-right" style="font-weight: 700;">5.0 km</td>
                 <td class="text-right">75 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">6.7%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">6.7%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">26.7%</td>
                 <td class="text-center">1</td>
@@ -599,8 +670,10 @@
                 <td class="text-right" style="font-weight: 700;">5.0 km</td>
                 <td class="text-right">75 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">6.7%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">6.7%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">26.7%</td>
                 <td class="text-center">1</td>
@@ -616,8 +689,10 @@
                 <td class="text-right" style="font-weight: 700;">5.0 km</td>
                 <td class="text-right">75 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">6.7%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">6.7%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">26.7%</td>
                 <td class="text-center">1</td>
@@ -633,8 +708,10 @@
                 <td class="text-right" style="font-weight: 700;">12.0 km</td>
                 <td class="text-right">200 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">6.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">6.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">24.0%</td>
                 <td class="text-center">1</td>
@@ -650,8 +727,10 @@
                 <td class="text-right" style="font-weight: 700;">6.0 km</td>
                 <td class="text-right">100 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">6.0%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">6.0%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">24.0%</td>
                 <td class="text-center">1</td>
@@ -667,8 +746,10 @@
                 <td class="text-right" style="font-weight: 700;">8.8 km</td>
                 <td class="text-right">150 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">5.9%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">5.9%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">23.5%</td>
                 <td class="text-center">1</td>
@@ -684,8 +765,10 @@
                 <td class="text-right" style="font-weight: 700;">8.7 km</td>
                 <td class="text-right">150 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">5.8%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">5.8%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">23.2%</td>
                 <td class="text-center">1</td>
@@ -701,8 +784,10 @@
                 <td class="text-right" style="font-weight: 700;">10.4 km</td>
                 <td class="text-right">200 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">5.2%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">5.2%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">20.8%</td>
                 <td class="text-center">3</td>
@@ -718,8 +803,10 @@
                 <td class="text-right" style="font-weight: 700;">8.2 km</td>
                 <td class="text-right">200 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">4.1%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 4%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">4.1%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 4%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">16.4%</td>
                 <td class="text-center">1</td>
@@ -735,8 +822,10 @@
                 <td class="text-right" style="font-weight: 700;">4.0 km</td>
                 <td class="text-right">125 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">3.2%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 3%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">3.2%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 3%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">12.8%</td>
                 <td class="text-center">1</td>
@@ -752,8 +841,10 @@
                 <td class="text-right" style="font-weight: 700;">4.0 km</td>
                 <td class="text-right">125 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">3.2%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 3%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">3.2%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 3%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">12.8%</td>
                 <td class="text-center">1</td>
@@ -769,8 +860,10 @@
                 <td class="text-right" style="font-weight: 700;">14.0 km</td>
                 <td class="text-right">570 km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">2.5%</span>
-                    <div class="progress-bar-container"><div class="progress-bar red" style="width: 2%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">2.5%</span>
+                        <div class="progress-bar-container"><div class="progress-bar red" style="width: 2%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">9.8%</td>
                 <td class="text-center">1</td>
@@ -806,7 +899,7 @@
                 <td style="font-weight: 600;">Andrea Bohn</td>
                 <td class="text-right">25 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">10.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">40.0%</span><div class="progress-bar-container"><div class="progress-bar green" style="width: 40%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">40.0%</span><div class="progress-bar-container"><div class="progress-bar green" style="width: 40%;"></div></div></div></td>
                 <td class="text-right">160.0%</td>
                 <td class="text-center">2</td>
                 <td class="text-center"><span class="status-badge badge-ahead">🟢 Ahead</span></td>
@@ -817,7 +910,7 @@
                 <td style="font-weight: 600;">Harvey Degan</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">23.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">23.0%</span><div class="progress-bar-container"><div class="progress-bar green" style="width: 23%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">23.0%</span><div class="progress-bar-container"><div class="progress-bar green" style="width: 23%;"></div></div></div></td>
                 <td class="text-right">92.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-track">🟢 On Track</span></td>
@@ -828,7 +921,7 @@
                 <td style="font-weight: 600;">Anthony Morgan</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">17.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">22.7%</span><div class="progress-bar-container"><div class="progress-bar green" style="width: 22%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">22.7%</span><div class="progress-bar-container"><div class="progress-bar green" style="width: 22%;"></div></div></div></td>
                 <td class="text-right">90.7%</td>
                 <td class="text-center">3</td>
                 <td class="text-center"><span class="status-badge badge-track">🟢 On Track</span></td>
@@ -839,7 +932,7 @@
                 <td style="font-weight: 600;">Jack Dean</td>
                 <td class="text-right">200 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">40.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">20.0%</span><div class="progress-bar-container"><div class="progress-bar yellow" style="width: 20%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">20.0%</span><div class="progress-bar-container"><div class="progress-bar yellow" style="width: 20%;"></div></div></div></td>
                 <td class="text-right">80.0%</td>
                 <td class="text-center">2</td>
                 <td class="text-center"><span class="status-badge badge-slight">🟡 Slightly Behind</span></td>
@@ -850,7 +943,7 @@
                 <td style="font-weight: 600;">Lee Singleton</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">17.6 km</td>
-                <td class="text-center"><span style="font-weight: 600;">17.6%</span><div class="progress-bar-container"><div class="progress-bar yellow" style="width: 17%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">17.6%</span><div class="progress-bar-container"><div class="progress-bar yellow" style="width: 17%;"></div></div></div></td>
                 <td class="text-right">70.4%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-slight">🟡 Slightly Behind</span></td>
@@ -861,7 +954,7 @@
                 <td style="font-weight: 600;">Ian Bush</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">8.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">16.0%</span><div class="progress-bar-container"><div class="progress-bar yellow" style="width: 16%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">16.0%</span><div class="progress-bar-container"><div class="progress-bar yellow" style="width: 16%;"></div></div></div></td>
                 <td class="text-right">64.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-slight">🟡 Slightly Behind</span></td>
@@ -872,7 +965,7 @@
                 <td style="font-weight: 600;">David Purnell</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">8.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">16.0%</span><div class="progress-bar-container"><div class="progress-bar yellow" style="width: 16%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">16.0%</span><div class="progress-bar-container"><div class="progress-bar yellow" style="width: 16%;"></div></div></div></td>
                 <td class="text-right">64.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-slight">🟡 Slightly Behind</span></td>
@@ -883,7 +976,7 @@
                 <td style="font-weight: 600;">Phil Deeley</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">10.6 km</td>
-                <td class="text-center"><span style="font-weight: 600;">14.1%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 14%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">14.1%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 14%;"></div></div></div></td>
                 <td class="text-right">56.5%</td>
                 <td class="text-center">2</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -894,7 +987,7 @@
                 <td style="font-weight: 600;">Scott Brough</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">10.1 km</td>
-                <td class="text-center"><span style="font-weight: 600;">13.5%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">13.5%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div></div></td>
                 <td class="text-right">53.9%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -905,7 +998,7 @@
                 <td style="font-weight: 600;">Pete Hall</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">10.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">13.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">13.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div></div></td>
                 <td class="text-right">53.3%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -916,7 +1009,7 @@
                 <td style="font-weight: 600;">Kevin Barnard</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">13.3 km</td>
-                <td class="text-center"><span style="font-weight: 600;">13.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">13.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 13%;"></div></div></div></td>
                 <td class="text-right">53.2%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -927,7 +1020,7 @@
                 <td style="font-weight: 600;">Christopher Bainbridge</td>
                 <td class="text-right">250 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">31.1 km</td>
-                <td class="text-center"><span style="font-weight: 600;">12.4%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">12.4%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></div></td>
                 <td class="text-right">49.8%</td>
                 <td class="text-center">3</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -938,7 +1031,7 @@
                 <td style="font-weight: 600;">Jimmy Simpson</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">12.3 km</td>
-                <td class="text-center"><span style="font-weight: 600;">12.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">12.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></div></td>
                 <td class="text-right">49.2%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -949,7 +1042,7 @@
                 <td style="font-weight: 600;">Adam Bown</td>
                 <td class="text-right">200 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">24.2 km</td>
-                <td class="text-center"><span style="font-weight: 600;">12.1%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">12.1%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></div></td>
                 <td class="text-right">48.4%</td>
                 <td class="text-center">3</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -960,7 +1053,7 @@
                 <td style="font-weight: 600;">Jay Lamb</td>
                 <td class="text-right">25 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">3.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">12.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">12.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></div></td>
                 <td class="text-right">48.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -971,7 +1064,7 @@
                 <td style="font-weight: 600;">Bradley M 🏳️‍🌈💪🏃‍♂️</td>
                 <td class="text-right">25 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">3.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">12.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">12.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 12%;"></div></div></div></td>
                 <td class="text-right">48.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -982,7 +1075,7 @@
                 <td style="font-weight: 600;">Ian Allen 🏳️‍🌈</td>
                 <td class="text-right">200 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">22.9 km</td>
-                <td class="text-center"><span style="font-weight: 600;">11.4%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 11%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">11.4%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 11%;"></div></div></div></td>
                 <td class="text-right">45.8%</td>
                 <td class="text-center">4</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -993,7 +1086,7 @@
                 <td style="font-weight: 600;">Sam Gower</td>
                 <td class="text-right">70 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">8.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">11.4%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 11%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">11.4%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 11%;"></div></div></div></td>
                 <td class="text-right">45.7%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1004,7 +1097,7 @@
                 <td style="font-weight: 600;">Farrell Baker</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">10.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">10.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 10%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">10.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 10%;"></div></div></div></td>
                 <td class="text-right">40.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1015,7 +1108,7 @@
                 <td style="font-weight: 600;">Ross Newman</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">5.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">10.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 10%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">10.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 10%;"></div></div></div></td>
                 <td class="text-right">40.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1026,7 +1119,7 @@
                 <td style="font-weight: 600;">Bo Wang</td>
                 <td class="text-right">200 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">19.5 km</td>
-                <td class="text-center"><span style="font-weight: 600;">9.8%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 9%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">9.8%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 9%;"></div></div></div></td>
                 <td class="text-right">39.0%</td>
                 <td class="text-center">4</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1037,7 +1130,7 @@
                 <td style="font-weight: 600;">Benjamin Lane</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">9.3 km</td>
-                <td class="text-center"><span style="font-weight: 600;">9.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 9%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">9.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 9%;"></div></div></div></td>
                 <td class="text-right">37.2%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1048,7 +1141,7 @@
                 <td style="font-weight: 600;">James S</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">6.2 km</td>
-                <td class="text-center"><span style="font-weight: 600;">8.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 8%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">8.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 8%;"></div></div></div></td>
                 <td class="text-right">33.1%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1059,7 +1152,7 @@
                 <td style="font-weight: 600;">Max D</td>
                 <td class="text-right">25 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">2.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">8.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 8%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">8.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 8%;"></div></div></div></td>
                 <td class="text-right">32.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1070,7 +1163,7 @@
                 <td style="font-weight: 600;">Matthew Rushton</td>
                 <td class="text-right">200 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">14.7 km</td>
-                <td class="text-center"><span style="font-weight: 600;">7.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 7%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">7.3%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 7%;"></div></div></div></td>
                 <td class="text-right">29.4%</td>
                 <td class="text-center">2</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1081,7 +1174,7 @@
                 <td style="font-weight: 600;">Sam Lewis</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">5.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">6.7%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">6.7%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></div></td>
                 <td class="text-right">26.7%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1092,7 +1185,7 @@
                 <td style="font-weight: 600;">James Chaundy</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">5.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">6.7%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">6.7%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></div></td>
                 <td class="text-right">26.7%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1103,7 +1196,7 @@
                 <td style="font-weight: 600;">Tom Garlick</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">5.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">6.7%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">6.7%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></div></td>
                 <td class="text-right">26.7%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1114,7 +1207,7 @@
                 <td style="font-weight: 600;">Alexander Brown</td>
                 <td class="text-right">200 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">12.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">6.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">6.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></div></td>
                 <td class="text-right">24.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1125,7 +1218,7 @@
                 <td style="font-weight: 600;">Matt Mackinnon-Coleman</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">6.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">6.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">6.0%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 6%;"></div></div></div></td>
                 <td class="text-right">24.0%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1136,7 +1229,7 @@
                 <td style="font-weight: 600;">Joe Pinder</td>
                 <td class="text-right">150 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">8.8 km</td>
-                <td class="text-center"><span style="font-weight: 600;">5.9%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">5.9%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div></div></td>
                 <td class="text-right">23.5%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1147,7 +1240,7 @@
                 <td style="font-weight: 600;">Mark Blakeman</td>
                 <td class="text-right">150 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">8.7 km</td>
-                <td class="text-center"><span style="font-weight: 600;">5.8%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">5.8%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div></div></td>
                 <td class="text-right">23.2%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1158,7 +1251,7 @@
                 <td style="font-weight: 600;">Jake Colbourn</td>
                 <td class="text-right">200 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">10.4 km</td>
-                <td class="text-center"><span style="font-weight: 600;">5.2%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">5.2%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 5%;"></div></div></div></td>
                 <td class="text-right">20.8%</td>
                 <td class="text-center">3</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1169,7 +1262,7 @@
                 <td style="font-weight: 600;">Joshua Savage</td>
                 <td class="text-right">200 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">8.2 km</td>
-                <td class="text-center"><span style="font-weight: 600;">4.1%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 4%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">4.1%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 4%;"></div></div></div></td>
                 <td class="text-right">16.4%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1180,7 +1273,7 @@
                 <td style="font-weight: 600;">Alice Wilkinson</td>
                 <td class="text-right">125 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">4.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">3.2%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 3%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">3.2%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 3%;"></div></div></div></td>
                 <td class="text-right">12.8%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1191,7 +1284,7 @@
                 <td style="font-weight: 600;">Barry Cassidy</td>
                 <td class="text-right">125 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">4.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">3.2%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 3%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">3.2%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 3%;"></div></div></div></td>
                 <td class="text-right">12.8%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1202,7 +1295,7 @@
                 <td style="font-weight: 600;">Thomas Glave</td>
                 <td class="text-right">570 km</td>
                 <td class="text-right" style="font-weight: 700; color: #0f172a;">14.0 km</td>
-                <td class="text-center"><span style="font-weight: 600;">2.5%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 2%;"></div></div></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val">2.5%</span><div class="progress-bar-container"><div class="progress-bar red" style="width: 2%;"></div></div></div></td>
                 <td class="text-right">9.8%</td>
                 <td class="text-center">1</td>
                 <td class="text-center"><span class="status-badge badge-behind">🔴 Behind</span></td>
@@ -1213,7 +1306,7 @@
                 <td style="font-weight: 600;">Adrián Nieves</td>
                 <td class="text-right">25 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1224,7 +1317,7 @@
                 <td style="font-weight: 600;">Dean Haycock</td>
                 <td class="text-right">25 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1235,7 +1328,7 @@
                 <td style="font-weight: 600;">Jon Williams</td>
                 <td class="text-right">25 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1246,7 +1339,7 @@
                 <td style="font-weight: 600;">Neesa</td>
                 <td class="text-right">25 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1257,7 +1350,7 @@
                 <td style="font-weight: 600;">Chris Bloxham</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1268,7 +1361,7 @@
                 <td style="font-weight: 600;">Ibrahim Subdurally-Plon</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1279,7 +1372,7 @@
                 <td style="font-weight: 600;">James Evans</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1290,7 +1383,7 @@
                 <td style="font-weight: 600;">James JimJay</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1301,7 +1394,7 @@
                 <td style="font-weight: 600;">Josh Heer</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1312,7 +1405,7 @@
                 <td style="font-weight: 600;">Lex Hooper</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1323,7 +1416,7 @@
                 <td style="font-weight: 600;">Patrick Ryan</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1334,7 +1427,7 @@
                 <td style="font-weight: 600;">Rimon Ali</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1345,7 +1438,7 @@
                 <td style="font-weight: 600;">Tom dawson</td>
                 <td class="text-right">50 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1356,7 +1449,7 @@
                 <td style="font-weight: 600;">Daniel Bridge</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1367,7 +1460,7 @@
                 <td style="font-weight: 600;">James Horne</td>
                 <td class="text-right">75 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1378,7 +1471,7 @@
                 <td style="font-weight: 600;">Chris W</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1389,7 +1482,7 @@
                 <td style="font-weight: 600;">John Simpson</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1400,7 +1493,7 @@
                 <td style="font-weight: 600;">Laura Rafailov</td>
                 <td class="text-right">100 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>
@@ -1411,7 +1504,7 @@
                 <td style="font-weight: 600;">Richard Wilkes</td>
                 <td class="text-right">125 km</td>
                 <td class="text-right" style="font-weight: 700; color: #94a3b8;">0.0 km</td>
-                <td class="text-center"><span style="color: #94a3b8;">0.0%</span></td>
+                <td class="text-center"><div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div></td>
                 <td class="text-right">-</td>
                 <td class="text-center">0</td>
                 <td class="text-center"><span class="status-badge badge-zero">⚪️ 0 km Logged</span></td>

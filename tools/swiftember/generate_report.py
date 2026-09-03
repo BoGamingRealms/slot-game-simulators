@@ -215,8 +215,10 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
                 <td class="text-right" style="font-weight: 700;">{r['distance']:.1f} km</td>
                 <td class="text-right">{r['monthly_target']:.0f} km</td>
                 <td class="text-center">
-                    <span style="font-weight: 700;">{pct_m:.1f}%</span>
-                    <div class="progress-bar-container"><div class="progress-bar {bar_color}" style="width: {bar_width}%;"></div></div>
+                    <div class="progress-cell">
+                        <span class="progress-val">{pct_m:.1f}%</span>
+                        <div class="progress-bar-container"><div class="progress-bar {bar_color}" style="width: {bar_width}%;"></div></div>
+                    </div>
                 </td>
                 <td class="text-right" style="font-weight: 700;">{pct_w:.1f}%</td>
                 <td class="text-center">{r['runs']}</td>
@@ -250,7 +252,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         if r['distance'] == 0:
             badge_cls = "badge-zero"
             status_text = "⚪️ 0 km Logged"
-            bar_html = '<span style="color: #94a3b8;">0.0%</span>'
+            bar_html = '<div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div>'
             pace_text = "-"
             runs_text = "0"
         else:
@@ -258,7 +260,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             status_text = r['status']
             bar_color = "green" if pct_w >= 90 else ("yellow" if pct_w >= 60 else "red")
             bar_width = min(100, int(pct_m))
-            bar_html = f'<span style="font-weight: 600;">{pct_m:.1f}%</span><div class="progress-bar-container"><div class="progress-bar {bar_color}" style="width: {bar_width}%;"></div></div>'
+            bar_html = f'<div class="progress-cell"><span class="progress-val">{pct_m:.1f}%</span><div class="progress-bar-container"><div class="progress-bar {bar_color}" style="width: {bar_width}%;"></div></div></div>'
             pace_text = f"{pct_w:.1f}%"
             runs_text = str(r['runs'])
 
@@ -337,10 +339,29 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         .badge-slight {{ background: #fef9c3; color: #a16207; }}
         .badge-behind {{ background: #fee2e2; color: #b91c1c; }}
         .badge-zero {{ background: #f1f5f9; color: #64748b; }}
-        .progress-bar-container {{
-            width: 55px; background: #e2e8f0; border-radius: 6px; height: 5px; display: inline-block; vertical-align: middle; margin-left: 4px; overflow: hidden;
+        .progress-cell {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            margin: 0 auto;
         }}
-        .progress-bar {{ height: 100%; background: #3b82f6; border-radius: 6px; }}
+        .progress-val {{
+            font-size: 8.5px;
+            font-weight: 700;
+            line-height: 1.1;
+            text-align: center;
+        }}
+        .progress-bar-container {{
+            width: 48px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            height: 4.5px;
+            overflow: hidden;
+            display: block;
+        }}
+        .progress-bar {{ height: 100%; background: #3b82f6; border-radius: 4px; }}
         .progress-bar.green {{ background: #22c55e; }}
         .progress-bar.blue {{ background: #3b82f6; }}
         .progress-bar.yellow {{ background: #eab308; }}
