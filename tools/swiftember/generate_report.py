@@ -360,7 +360,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     <div class="superlatives-grid">
         <div class="super-card">
             <div class="super-icon">🌟</div>
-            <div class="super-award">Pace Setter</div>
+            <div class="super-award">Goal Setter</div>
             <div class="super-winner">{pace_setter['registered_name'] if pace_setter else '-'}</div>
             <div class="super-stat">{f"{pace_setter['pct_monthly']:.1f}% of Goal ({pace_setter['distance']:.1f} km)" if pace_setter else '-'}</div>
         </div>
@@ -374,7 +374,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             <div class="super-icon">🎯</div>
             <div class="super-award">Goal Buster</div>
             <div class="super-winner">{goal_buster['registered_name'] if goal_buster else '-'}</div>
-            <div class="super-stat">{f"{goal_buster['pct_weekly']:.1f}% Pace ({goal_buster['distance']:.1f} km)" if goal_buster else '-'}</div>
+            <div class="super-stat">{f"{goal_buster['pct_weekly']:.1f}% Weekly Goal ({goal_buster['distance']:.1f} km)" if goal_buster else '-'}</div>
         </div>
         <div class="super-card">
             <div class="super-icon">🏔</div>
@@ -403,7 +403,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         </div>
         <div class="metric-card">
             <div class="metric-val">{pct_pace_rate:.1f}%</div>
-            <div class="metric-label">Week {week_num} Pace Rate</div>
+            <div class="metric-label">Week {week_num} Goal Progress</div>
             <div class="metric-sub">{total_logged:,.1f} / {expected_pace_target:,.1f} km Target</div>
         </div>
         <div class="metric-card">
@@ -422,7 +422,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
                 <th class="text-right">Logged (km)</th>
                 <th class="text-right">Goal (km)</th>
                 <th class="text-center">Monthly Progress</th>
-                <th class="text-right">Week Pace %</th>
+                <th class="text-right">Weekly Goal %</th>
                 <th class="text-center">Runs</th>
                 <th class="text-right">Longest</th>
                 <th class="text-center">Avg Pace</th>
@@ -446,7 +446,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
                 <th class="text-right">Monthly Goal</th>
                 <th class="text-right">Logged This Week</th>
                 <th class="text-center">Monthly Progress</th>
-                <th class="text-right">Weekly Pace</th>
+                <th class="text-right">Weekly Goal %</th>
                 <th class="text-center">Runs</th>
                 <th class="text-center">Status / Note</th>
             </tr>
