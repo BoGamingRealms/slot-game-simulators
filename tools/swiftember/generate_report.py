@@ -272,6 +272,14 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             </tr>
         """
 
+    logo_path = os.path.join(BASE_DIR, "assets", "swifts_logo.jpg")
+    logo_html = ""
+    if os.path.exists(logo_path):
+        import base64
+        with open(logo_path, "rb") as img_f:
+            b64 = base64.b64encode(img_f.read()).decode("utf-8")
+            logo_html = f'<img src="data:image/jpeg;base64,{b64}" alt="Swifts Logo" style="height: 46px; max-width: 120px; object-fit: contain; border-radius: 6px; background: #ffffff; padding: 2px 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); margin-right: 4px;">'
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -287,10 +295,11 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         }}
         .header {{
             background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
-            color: #ffffff; padding: 16px 20px; border-radius: 10px; margin-bottom: 12px;
+            color: #ffffff; padding: 14px 18px; border-radius: 10px; margin-bottom: 12px;
             display: flex; justify-content: space-between; align-items: center;
         }}
-        .header-title h1 {{ margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }}
+        .header-left {{ display: flex; align-items: center; gap: 12px; }}
+        .header-title h1 {{ margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }}
         .header-title p {{ margin: 3px 0 0 0; font-size: 11px; color: #cbd5e1; font-weight: 400; }}
         .badge-live {{
             background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);
@@ -343,9 +352,12 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
 </head>
 <body>
     <div class="header">
-        <div class="header-title">
-            <h1>🏃‍♂️ SWIFTEMBER 2026</h1>
-            <p>September Running Challenge — Week {week_num} Progress & Leaderboard Report</p>
+        <div class="header-left">
+            {logo_html}
+            <div class="header-title">
+                <h1>SWIFTEMBER 2026</h1>
+                <p>Birmingham Swifts Running Club — Week {week_num} Progress & Leaderboard Report</p>
+            </div>
         </div>
         <div class="badge-live">
             <div>WEEK {week_num} PROGRESS REPORT</div>
