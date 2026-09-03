@@ -1,6 +1,6 @@
 # Swiftember 2026 — Weekly Report & Leaderboard Generator
 
-Automated suite to parse Strava Club Leaderboard data and generate the standardized **Swiftember PDF & Markdown reports** with exact formatting, fun superlatives, fair % target leaderboards, member shout-outs, and full roster tracking.
+Automated suite to parse Strava Club Leaderboard data and generate the standardized **Swiftember PDF & Markdown reports** with exact formatting, high-readability typography, fun superlatives, fair % target leaderboards, member shout-outs, and full roster tracking.
 
 ---
 
@@ -15,20 +15,20 @@ Automated suite to parse Strava Club Leaderboard data and generate the standardi
 
 ---
 
-## ⚡️ Standardized Report Specification
+## ⚡️ Standardized Report Specification & Typography
 
-All future reports generated with this tool will maintain this exact structure:
+All future reports generated with this tool are permanently configured with these exact specifications:
 
 1. **Header Banner**: Official Birmingham Swifts logo + `🏃‍♂️ SWIFTEMBER 2026` + `Birmingham Swifts — Week {N} Progress & Leaderboard Report`.
 2. **⚡️ WEEKLY SWIFTEMBER HEROES** (5 Mutually Exclusive Superlative Cards):
-   * 🌟 **Goal Setter** (*Mid & Long Target Distance: $\ge 70\text{ km}$*): Top weekly pro-rata surge among medium/long distance target runners.
-   * 🐣 **Rising Swift** (*Short Target Distance: $\le 50\text{ km}$*): Top weekly pro-rata surge among short distance target runners.
+   * 🌟 **Goal Setter** (*Mid & Long Target Distance: $\ge 70\text{ km}$*): Top weekly pro-rata surge among medium/long distance target runners (Winner font: `16px`).
+   * 🐣 **Rising Swift** (*Short Target Distance: $\le 50\text{ km}$*): Top weekly pro-rata surge among short distance target runners (Winner font: `16px`).
    * 🔥 **Road Warrior** (*Most Runs Logged*): Runner who logged the most runs during the week.
    * 🏔 **Mountain Goat** (*Most Elevation*): Runner with the most total elevation climbed (m).
    * ⚡️ **Speed Demon** (*Fastest Avg Pace*): Runner with the fastest average pace (min/km).
-3. **📊 EXECUTIVE SUMMARY**: 4 summary metric tiles (Total Pledge, Logged Distance, Week Goal Progress, Active Runners).
-4. **🎯 WEEKLY ACHIEVEMENT LEADERBOARD**: All active runners ranked fairly by percentage of monthly target completed, featuring centered percentage numbers above color-coded progress bars.
-5. **📣 SWIFTEMBER SHOUT-OUTS**: Dedicated stacked member shout-out cards loaded from `shoutouts.json` for that week.
+3. **📊 EXECUTIVE SUMMARY**: 4 summary metric tiles (`24px` metric values).
+4. **🎯 WEEKLY ACHIEVEMENT LEADERBOARD**: All active runners ranked fairly by percentage of monthly target completed, featuring `13px` table rows and centered percentage numbers above color-coded progress bars.
+5. **📣 SWIFTEMBER SHOUT-OUTS**: Dedicated vertically stacked cards featuring `16px` runner names, `13px` event tags, `13px` descriptions, and a `13px` footer note: *"✨ More shout-outs coming in future weeks!"*.
 6. **📋 FULL SWIFTEMBER REPORT**: Complete 56-runner roster sorted by % achievement (active runners) followed by inactive participants ($0\text{ km Logged}$).
 
 ---
@@ -55,3 +55,4 @@ python3 tools/swiftember/generate_report.py --week 1 --input tools/swiftember/mo
 * **`-w` / `--week`**: Week number (`1`, `2`, `3`, `4`). Determines expected pro-rata goal ($25\%$, $50\%$, $75\%$, $100\%$) and loads the corresponding week's shout-outs.
 * **`-i` / `--input`**: Path to the raw Strava leaderboard text file.
 * **`-o` / `--output-pdf`**: Custom output PDF path (defaults to `~/Downloads/Swiftember_2026_Week<N>_Report.pdf`).
+* **`-f` / `--font-size`**: Typography scale preset (`large` is the default standard, or `compact` for the smaller layout).
