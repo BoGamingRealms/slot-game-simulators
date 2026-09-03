@@ -181,8 +181,10 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     # Extract superlatives
     pace_setter = by_pct[0] if by_pct else None
     road_warrior = max(active, key=lambda x: (x["runs"], x["distance"])) if active else None
-    # Goal buster: runner with highest weekly pace rate (or 2nd highest if pace_setter is 1st)
-    goal_buster = by_pct[1] if len(by_pct) > 1 else (by_pct[0] if by_pct else None)
+    
+    # Low-target category hero (monthly target <= 50 km)
+    low_target_active = [m for m in active if m["monthly_target"] <= 50.0]
+    pocket_rocket = max(low_target_active, key=lambda x: (x["pct_weekly"], x["distance"])) if low_target_active else None
     
     # Elev climber
     def parse_elev(e_str):
@@ -350,19 +352,25 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         <div class="header-left">
             {logo_html}
             <div class="header-title">
-                <h1>SWIFTEMBER 2026</h1>
+                <h1>🏃‍♂️ SWIFTEMBER 2026</h1>
                 <p>Birmingham Swifts — Week {week_num} Progress & Leaderboard Report</p>
             </div>
         </div>
     </div>
 
-    <div class="section-title">WEEKLY HEROES</div>
+    <div class="section-title">⚡️ WEEKLY SWIFTEMBER HEROES</div>
     <div class="superlatives-grid">
         <div class="super-card">
             <div class="super-icon">🌟</div>
             <div class="super-award">Goal Setter</div>
             <div class="super-winner">{pace_setter['registered_name'] if pace_setter else '-'}</div>
-            <div class="super-stat">{f"{pace_setter['pct_monthly']:.1f}% of Goal ({pace_setter['distance']:.1f} km)" if pace_setter else '-'}</div>
+            <div class="super-stat">{f"{pace_setter['pct_weekly']:.1f}% Weekly Goal ({pace_setter['distance']:.1f} km)" if pace_setter else '-'}</div>
+        </div>
+        <div class="super-card">
+            <div class="super-icon">🚀</div>
+            <div class="super-award">Pocket Rocket</div>
+            <div class="super-winner">{pocket_rocket['registered_name'] if pocket_rocket else '-'}</div>
+            <div class="super-stat">{f"{pocket_rocket['pct_weekly']:.1f}% Weekly Goal ({pocket_rocket['distance']:.1f} km)" if pocket_rocket else '-'}</div>
         </div>
         <div class="super-card">
             <div class="super-icon">🔥</div>
@@ -371,19 +379,13 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             <div class="super-stat">{f"{road_warrior['runs']} Runs ({road_warrior['distance']:.1f} km)" if road_warrior else '-'}</div>
         </div>
         <div class="super-card">
-            <div class="super-icon">🎯</div>
-            <div class="super-award">Goal Buster</div>
-            <div class="super-winner">{goal_buster['registered_name'] if goal_buster else '-'}</div>
-            <div class="super-stat">{f"{goal_buster['pct_weekly']:.1f}% Weekly Goal ({goal_buster['distance']:.1f} km)" if goal_buster else '-'}</div>
-        </div>
-        <div class="super-card">
             <div class="super-icon">🏔</div>
             <div class="super-award">Mountain Goat</div>
             <div class="super-winner">{elev_runner['registered_name'] if elev_runner else '-'}</div>
             <div class="super-stat">{f"{elev_runner['elev']} Elevation" if elev_runner else '-'}</div>
         </div>
         <div class="super-card">
-            <div class="super-icon">🚀</div>
+            <div class="super-icon">⚡️</div>
             <div class="super-award">Speed Demon</div>
             <div class="super-winner">{speed_runner['registered_name'] if speed_runner else '-'}</div>
             <div class="super-stat">{f"{speed_runner['pace']} ({speed_runner['distance']:.1f} km)" if speed_runner else '-'}</div>
@@ -413,7 +415,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         </div>
     </div>
 
-    <div class="section-title">WEEKLY ACHIEVEMENT LEADERBOARD</div>
+    <div class="section-title">🎯 WEEKLY ACHIEVEMENT LEADERBOARD</div>
     <table>
         <thead>
             <tr>
@@ -437,7 +439,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
 
     <div class="page-break"></div>
 
-    <div class="section-title">FULL SWIFTEMBER REPORT</div>
+    <div class="section-title">📋 FULL SWIFTEMBER REPORT</div>
     <table>
         <thead>
             <tr>
