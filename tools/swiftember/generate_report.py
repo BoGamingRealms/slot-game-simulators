@@ -342,9 +342,9 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         metric_lbl_font = "11px"
         metric_sub_font = "10px"
         shout_name_font = "16px"
-        shout_tag_font = "9.5px"
+        shout_tag_font = "13px"
         shout_msg_font = "13px"
-        shout_footer_font = "10.5px"
+        shout_footer_font = "13px"
     else: # compact preset
         body_font = "10px"
         table_font = "9px"
@@ -479,8 +479,8 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             color: #ffffff;
             font-size: {shout_tag_font};
             font-weight: 700;
-            padding: 1px 6px;
-            border-radius: 8px;
+            padding: 2px 8px;
+            border-radius: 6px;
         }}
         .shoutout-msg {{
             font-size: {shout_msg_font};
