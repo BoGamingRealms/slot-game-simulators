@@ -184,7 +184,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     
     # Low-target category hero (monthly target <= 50 km)
     low_target_active = [m for m in active if m["monthly_target"] <= 50.0]
-    pocket_rocket = max(low_target_active, key=lambda x: (x["pct_weekly"], x["distance"])) if low_target_active else None
+    rising_swift = max(low_target_active, key=lambda x: (x["pct_weekly"], x["distance"])) if low_target_active else None
     
     # Elev climber
     def parse_elev(e_str):
@@ -367,10 +367,10 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             <div class="super-stat">{f"{pace_setter['pct_weekly']:.1f}% Weekly Goal ({pace_setter['distance']:.1f} km)" if pace_setter else '-'}</div>
         </div>
         <div class="super-card">
-            <div class="super-icon">🚀</div>
-            <div class="super-award">Pocket Rocket</div>
-            <div class="super-winner">{pocket_rocket['registered_name'] if pocket_rocket else '-'}</div>
-            <div class="super-stat">{f"{pocket_rocket['pct_weekly']:.1f}% Weekly Goal ({pocket_rocket['distance']:.1f} km)" if pocket_rocket else '-'}</div>
+            <div class="super-icon">🐣</div>
+            <div class="super-award">Rising Swift</div>
+            <div class="super-winner">{rising_swift['registered_name'] if rising_swift else '-'}</div>
+            <div class="super-stat">{f"{rising_swift['pct_weekly']:.1f}% Weekly Goal ({rising_swift['distance']:.1f} km)" if rising_swift else '-'}</div>
         </div>
         <div class="super-card">
             <div class="super-icon">🔥</div>
