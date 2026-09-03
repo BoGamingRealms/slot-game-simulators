@@ -296,15 +296,11 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         .header {{
             background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
             color: #ffffff; padding: 14px 18px; border-radius: 10px; margin-bottom: 12px;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; align-items: center; justify-content: flex-start;
         }}
-        .header-left {{ display: flex; align-items: center; gap: 12px; }}
-        .header-title h1 {{ margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }}
-        .header-title p {{ margin: 3px 0 0 0; font-size: 11px; color: #cbd5e1; font-weight: 400; }}
-        .badge-live {{
-            background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 6px 12px; border-radius: 16px; font-size: 10px; font-weight: 600; color: #f8fafc; text-align: right;
-        }}
+        .header-left {{ display: flex; align-items: center; gap: 14px; width: 100%; }}
+        .header-title h1 {{ margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }}
+        .header-title p {{ margin: 3px 0 0 0; font-size: 11.5px; color: #cbd5e1; font-weight: 400; }}
         .section-title {{
             font-size: 13px; font-weight: 700; color: #0f172a; margin: 14px 0 8px 0;
             display: flex; align-items: center; gap: 6px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px;
@@ -356,16 +352,12 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             {logo_html}
             <div class="header-title">
                 <h1>SWIFTEMBER 2026</h1>
-                <p>Birmingham Swifts Running Club — Week {week_num} Progress & Leaderboard Report</p>
+                <p>Birmingham Swifts — Week {week_num} Progress & Leaderboard Report</p>
             </div>
-        </div>
-        <div class="badge-live">
-            <div>WEEK {week_num} PROGRESS REPORT</div>
-            <div style="font-size: 8.5px; opacity: 0.85;">{badge_subtitle}</div>
         </div>
     </div>
 
-    <div class="section-title">🏆 WEEKLY AWARDS & FUN SUPERLATIVES</div>
+    <div class="section-title">WEEKLY HEROES</div>
     <div class="superlatives-grid">
         <div class="super-card">
             <div class="super-icon">🌟</div>
@@ -422,7 +414,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         </div>
     </div>
 
-    <div class="section-title">🎯 TARGET ACHIEVEMENT LEADERBOARD (% OF PERSONAL GOAL)</div>
+    <div class="section-title">WEEKLY ACHIEVEMENT LEADERBOARD</div>
     <table>
         <thead>
             <tr>
@@ -446,26 +438,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
 
     <div class="page-break"></div>
 
-    <div class="section-title">👑 TOP 10 PURE DISTANCE LEADERBOARD</div>
-    <table>
-        <thead>
-            <tr>
-                <th class="text-center" style="width: 30px;">Rank</th>
-                <th>Runner Name</th>
-                <th class="text-right">Distance (km)</th>
-                <th class="text-center">Runs</th>
-                <th class="text-right">Longest Run</th>
-                <th class="text-center">Avg Pace</th>
-                <th class="text-right">Elevation Gain</th>
-                <th>Target & Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {dist_rows}
-        </tbody>
-    </table>
-
-    <div class="section-title" style="margin-top: 18px;">📋 FULL {len(matched_runners)}-RUNNER ROSTER & CHALLENGE STATUS</div>
+    <div class="section-title">FULL CHALLENGE REPORT</div>
     <table>
         <thead>
             <tr>
@@ -485,7 +458,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     </table>
 
     <div class="footer">
-        Swiftember 2026 Challenge Report • Generated for BoGamingRealms • Synchronized with Strava Club Leaderboard
+        Swiftember 2026 Challenge Report • Birmingham Swifts Running Club
     </div>
 </body>
 </html>
