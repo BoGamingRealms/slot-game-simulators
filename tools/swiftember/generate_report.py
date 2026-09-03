@@ -176,12 +176,9 @@ def process_swiftember_data(strava_entries, roster, aliases, week_num=1):
         
     return matched_runners
 
-def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official Swiftember Report"):
+def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official Swiftember Report", font_size="large"):
+    # Target calculations
     active = [m for m in matched_runners if m["distance"] > 0]
-    by_pct = sorted(active, key=lambda x: x["pct_monthly"], reverse=True)
-    by_dist = sorted(active, key=lambda x: x["distance"], reverse=True)
-    all_sorted = sorted(matched_runners, key=lambda x: (x["pct_monthly"], x["distance"], -x["monthly_target"]), reverse=True)
-    
     total_pledge = sum(m["monthly_target"] for m in matched_runners)
     total_logged = sum(m["distance"] for m in active)
     expected_pace_target = total_pledge * (week_num / 4.0)
@@ -191,7 +188,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     
     # Goal Setter: Medium & Long Distance Target Runners (Monthly Goal >= 70 km)
     mid_long_active = [m for m in active if m["monthly_target"] >= 70.0]
-    pace_setter = max(mid_long_active, key=lambda x: (x["pct_weekly"], x["distance"])) if mid_long_active else (by_pct[0] if by_pct else None)
+    pace_setter = max(mid_long_active, key=lambda x: (x["pct_weekly"], x["distance"])) if mid_long_active else (max(active, key=lambda x: x["pct_monthly"]) if active else None)
     
     # Rising Swift: Low-target Category Runners (Monthly Goal <= 50 km)
     low_target_active = [m for m in active if m["monthly_target"] <= 50.0]
@@ -210,6 +207,11 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         m = re.match(r'(\d+):(\d+)', p_str)
         return int(m.group(1))*60 + int(m.group(2)) if m else 99999
     speed_runner = min([m for m in active if parse_pace(m["pace"]) < 99999], key=lambda x: parse_pace(x["pace"])) if active else None
+
+    # Sortings
+    by_pct = sorted(active, key=lambda x: (x["pct_monthly"], x["distance"]), reverse=True)
+    by_dist = sorted(active, key=lambda x: x["distance"], reverse=True)
+    all_sorted = sorted(matched_runners, key=lambda x: (x["distance"] > 0, x["pct_monthly"], x["distance"]), reverse=True)
 
     # HTML Rows
     target_rows = ""
@@ -246,8 +248,8 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         dist_rows += f"""
             <tr>
                 <td class="text-center" style="font-weight: 700;">#{i}</td>
-                <td style="font-weight: 700; font-size: 9.5px;">{r['registered_name']}</td>
-                <td class="text-right" style="font-weight: 700; color: #1e1b4b; font-size: 10px;">{r['distance']:.1f} km</td>
+                <td style="font-weight: 700;">{r['registered_name']}</td>
+                <td class="text-right" style="font-weight: 700; color: #1e1b4b;">{r['distance']:.1f} km</td>
                 <td class="text-center" style="font-weight: 700;">{r['runs']}</td>
                 <td class="text-right">{r['longest']:.1f} km</td>
                 <td class="text-center">{r['pace']}</td>
@@ -294,7 +296,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         import base64
         with open(logo_path, "rb") as img_f:
             b64 = base64.b64encode(img_f.read()).decode("utf-8")
-            logo_html = f'<img src="data:image/jpeg;base64,{b64}" alt="Swifts Logo" style="height: 46px; max-width: 120px; object-fit: contain; border-radius: 6px; background: #ffffff; padding: 2px 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); margin-right: 4px;">'
+            logo_html = f'<img src="data:image/jpeg;base64,{b64}" alt="Swifts Logo" style="height: 48px; max-width: 120px; object-fit: contain; border-radius: 6px; background: #ffffff; padding: 2px 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); margin-right: 4px;">'
 
     # Build Shout-outs HTML
     shoutouts = load_shoutouts(week_num)
@@ -320,6 +322,52 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             <div class="shoutouts-footer">✨ More shout-outs coming in future weeks!</div>
         """
 
+    # Font sizing presets (large vs compact)
+    if font_size == "large":
+        body_font = "11px"
+        table_font = "10px"
+        th_pad = "5.5px 7px"
+        th_font = "8.5px"
+        td_pad = "5px 7px"
+        badge_font = "8.5px"
+        badge_pad = "2.5px 7px"
+        prog_val_font = "9px"
+        prog_bar_w = "52px"
+        prog_bar_h = "5px"
+        super_award_font = "9px"
+        super_sub_font = "8px"
+        super_winner_font = "11.5px"
+        super_stat_font = "9.5px"
+        metric_val_font = "20px"
+        metric_lbl_font = "10px"
+        metric_sub_font = "9px"
+        shout_name_font = "11px"
+        shout_tag_font = "8px"
+        shout_msg_font = "9.2px"
+        shout_footer_font = "9px"
+    else: # compact preset
+        body_font = "10px"
+        table_font = "9px"
+        th_pad = "5px 6px"
+        th_font = "8px"
+        td_pad = "4.5px 6px"
+        badge_font = "8px"
+        badge_pad = "2px 6px"
+        prog_val_font = "8.5px"
+        prog_bar_w = "48px"
+        prog_bar_h = "4.5px"
+        super_award_font = "8.5px"
+        super_sub_font = "7.5px"
+        super_winner_font = "10.5px"
+        super_stat_font = "9px"
+        metric_val_font = "18px"
+        metric_lbl_font = "9.5px"
+        metric_sub_font = "8.5px"
+        shout_name_font = "10px"
+        shout_tag_font = "7.5px"
+        shout_msg_font = "8.5px"
+        shout_footer_font = "8.5px"
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -327,49 +375,49 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     <title>Swiftember 2026 - Week {week_num} Progress Report</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        @page {{ size: A4; margin: 10mm 10mm; }}
+        @page {{ size: A4; margin: 9mm 9mm; }}
         * {{ box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
         body {{
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #1e293b; background-color: #ffffff; line-height: 1.35; font-size: 10px; margin: 0; padding: 0;
+            color: #1e293b; background-color: #ffffff; line-height: 1.35; font-size: {body_font}; margin: 0; padding: 0;
         }}
         .header {{
             background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
-            color: #ffffff; padding: 14px 18px; border-radius: 10px; margin-bottom: 12px;
+            color: #ffffff; padding: 13px 16px; border-radius: 9px; margin-bottom: 11px;
             display: flex; align-items: center; justify-content: flex-start;
         }}
         .header-left {{ display: flex; align-items: center; gap: 14px; width: 100%; }}
         .header-title h1 {{ margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }}
         .header-title p {{ margin: 3px 0 0 0; font-size: 11.5px; color: #cbd5e1; font-weight: 400; }}
         .section-title {{
-            font-size: 13px; font-weight: 700; color: #0f172a; margin: 14px 0 8px 0;
+            font-size: 13px; font-weight: 700; color: #0f172a; margin: 13px 0 7px 0;
             display: flex; align-items: center; gap: 6px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px;
         }}
-        .superlatives-grid {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }}
+        .superlatives-grid {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-bottom: 11px; }}
         .super-card {{
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid #e2e8f0; border-top: 3px solid #6366f1; border-radius: 8px; padding: 8px; text-align: center;
+            border: 1px solid #e2e8f0; border-top: 3px solid #6366f1; border-radius: 8px; padding: 7px; text-align: center;
         }}
         .super-icon {{ font-size: 16px; margin-bottom: 2px; }}
-        .super-award {{ font-size: 8.5px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }}
-        .super-sub {{ font-size: 7.5px; font-weight: 600; color: #64748b; margin-bottom: 3px; }}
-        .super-winner {{ font-size: 10.5px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }}
-        .super-stat {{ font-size: 9px; font-weight: 600; color: #4338ca; }}
-        .metrics-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }}
-        .metric-card {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; text-align: center; }}
-        .metric-val {{ font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }}
-        .metric-label {{ font-size: 9.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }}
-        .metric-sub {{ font-size: 8.5px; color: #3b82f6; margin-top: 2px; font-weight: 500; }}
-        table {{ width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 12px; }}
+        .super-award {{ font-size: {super_award_font}; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }}
+        .super-sub {{ font-size: {super_sub_font}; font-weight: 600; color: #64748b; margin-bottom: 3px; }}
+        .super-winner {{ font-size: {super_winner_font}; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }}
+        .super-stat {{ font-size: {super_stat_font}; font-weight: 600; color: #4338ca; }}
+        .metrics-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-bottom: 11px; }}
+        .metric-card {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 11px; text-align: center; }}
+        .metric-val {{ font-size: {metric_val_font}; font-weight: 800; color: #0f172a; margin-bottom: 2px; }}
+        .metric-label {{ font-size: {metric_lbl_font}; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }}
+        .metric-sub {{ font-size: {metric_sub_font}; color: #3b82f6; margin-top: 2px; font-weight: 500; }}
+        table {{ width: 100%; border-collapse: collapse; font-size: {table_font}; margin-bottom: 11px; }}
         th {{
             background: #f1f5f9; color: #334155; font-weight: 700; text-transform: uppercase;
-            font-size: 8px; letter-spacing: 0.4px; padding: 5px 6px; border-top: 1px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; text-align: left;
+            font-size: {th_font}; letter-spacing: 0.4px; padding: {th_pad}; border-top: 1px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; text-align: left;
         }}
-        td {{ padding: 4.5px 6px; border-bottom: 1px solid #f1f5f9; color: #1e293b; vertical-align: middle; }}
+        td {{ padding: {td_pad}; border-bottom: 1px solid #f1f5f9; color: #1e293b; vertical-align: middle; }}
         tr:nth-child(even) td {{ background-color: #fafafa; }}
         .text-right {{ text-align: right; }}
         .text-center {{ text-align: center; }}
-        .status-badge {{ display: inline-block; padding: 2px 6px; border-radius: 10px; font-size: 8px; font-weight: 700; }}
+        .status-badge {{ display: inline-block; padding: {badge_pad}; border-radius: 10px; font-size: {badge_font}; font-weight: 700; }}
         .badge-ahead {{ background: #dcfce7; color: #15803d; }}
         .badge-track {{ background: #dbeafe; color: #1d4ed8; }}
         .badge-slight {{ background: #fef9c3; color: #a16207; }}
@@ -384,16 +432,16 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             margin: 0 auto;
         }}
         .progress-val {{
-            font-size: 8.5px;
+            font-size: {prog_val_font};
             font-weight: 700;
             line-height: 1.1;
             text-align: center;
         }}
         .progress-bar-container {{
-            width: 48px;
+            width: {prog_bar_w};
             background: #e2e8f0;
             border-radius: 4px;
-            height: 4.5px;
+            height: {prog_bar_h};
             overflow: hidden;
             display: block;
         }}
@@ -405,8 +453,8 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         .shoutouts-grid {{
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-bottom: 10px;
+            gap: 5px;
+            margin-bottom: 8px;
         }}
         .shoutout-card {{
             background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
@@ -422,31 +470,31 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             margin-bottom: 2px;
         }}
         .shoutout-name {{
-            font-size: 10px;
+            font-size: {shout_name_font};
             font-weight: 700;
             color: #0369a1;
         }}
         .shoutout-tag {{
             background: #0284c7;
             color: #ffffff;
-            font-size: 7.5px;
+            font-size: {shout_tag_font};
             font-weight: 700;
             padding: 1px 6px;
             border-radius: 8px;
         }}
         .shoutout-msg {{
-            font-size: 8.5px;
+            font-size: {shout_msg_font};
             color: #334155;
             line-height: 1.35;
         }}
         .shoutouts-footer {{
             text-align: center;
-            font-size: 8.5px;
+            font-size: {shout_footer_font};
             font-weight: 600;
             color: #64748b;
             font-style: italic;
-            margin-top: 5px;
-            margin-bottom: 8px;
+            margin-top: 4px;
+            margin-bottom: 7px;
         }}
         .page-break {{ page-break-before: always; }}
         .footer {{ font-size: 8px; color: #94a3b8; text-align: center; margin-top: 14px; border-top: 1px solid #e2e8f0; padding-top: 6px; }}
@@ -584,6 +632,7 @@ def main():
     parser.add_argument("-w", "--week", type=int, default=1, help="Week number (1, 2, 3, 4). Default: 1")
     parser.add_argument("-o", "--output-pdf", help="Output PDF file path (default: ~/Downloads/Swiftember_2026_Week{N}_Report.pdf)")
     parser.add_argument("-t", "--title-sub", default="Official Swiftember Report", help="Subtitle under badge in header")
+    parser.add_argument("-f", "--font-size", choices=["large", "compact"], default="large", help="Font size preset: 'large' (default bigger fonts) or 'compact'")
     args = parser.parse_args()
 
     roster = load_roster()
@@ -606,7 +655,7 @@ def main():
     matched_runners = process_swiftember_data(strava_entries, roster, aliases, week_num=args.week)
 
     # Generate HTML
-    html_content = generate_html_report(matched_runners, week_num=args.week, badge_subtitle=args.title_sub)
+    html_content = generate_html_report(matched_runners, week_num=args.week, badge_subtitle=args.title_sub, font_size=args.font_size)
     
     html_path = os.path.join(BASE_DIR, f"temp_report_week{args.week}.html")
     with open(html_path, "w", encoding="utf-8") as f:
