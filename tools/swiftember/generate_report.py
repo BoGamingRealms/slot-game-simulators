@@ -402,9 +402,9 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         .progress-bar.yellow {{ background: #eab308; }}
         .progress-bar.red {{ background: #ef4444; }}
         .shoutouts-grid {{
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
             margin-bottom: 10px;
         }}
         .shoutout-card {{
@@ -412,7 +412,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             border: 1px solid #bae6fd;
             border-left: 4px solid #0284c7;
             border-radius: 6px;
-            padding: 7px 10px;
+            padding: 6px 10px;
         }}
         .shoutout-header {{
             display: flex;
