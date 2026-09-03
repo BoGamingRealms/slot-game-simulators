@@ -317,6 +317,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             <div class="shoutouts-grid">
                 {cards_html}
             </div>
+            <div class="shoutouts-footer">✨ More shout-outs coming in future weeks!</div>
         """
 
     html = f"""<!DOCTYPE html>
@@ -437,6 +438,15 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             font-size: 8.5px;
             color: #334155;
             line-height: 1.35;
+        }}
+        .shoutouts-footer {{
+            text-align: center;
+            font-size: 8.5px;
+            font-weight: 600;
+            color: #64748b;
+            font-style: italic;
+            margin-top: 5px;
+            margin-bottom: 8px;
         }}
         .page-break {{ page-break-before: always; }}
         .footer {{ font-size: 8px; color: #94a3b8; text-align: center; margin-top: 14px; border-top: 1px solid #e2e8f0; padding-top: 6px; }}
