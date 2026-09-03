@@ -50,6 +50,17 @@ def load_aliases():
         data = json.load(f)
     return data.get("aliases", {})
 
+def load_shoutouts(week_num=1):
+    path = os.path.join(BASE_DIR, "shoutouts.json")
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get(f"week_{week_num}", [])
+    except Exception:
+        return []
+
 def parse_strava_table(raw_text):
     """Parses tab-separated or whitespace-separated Strava leaderboard lines."""
     entries = []
@@ -285,6 +296,29 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             b64 = base64.b64encode(img_f.read()).decode("utf-8")
             logo_html = f'<img src="data:image/jpeg;base64,{b64}" alt="Swifts Logo" style="height: 46px; max-width: 120px; object-fit: contain; border-radius: 6px; background: #ffffff; padding: 2px 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); margin-right: 4px;">'
 
+    # Build Shout-outs HTML
+    shoutouts = load_shoutouts(week_num)
+    shoutouts_html = ""
+    if shoutouts:
+        cards_html = ""
+        for s in shoutouts:
+            tag_html = f'<span class="shoutout-tag">{s["tag"]}</span>' if s.get("tag") else ""
+            cards_html += f"""
+                <div class="shoutout-card">
+                    <div class="shoutout-header">
+                        <span class="shoutout-name">{s['name']}</span>
+                        {tag_html}
+                    </div>
+                    <div class="shoutout-msg">{s['message']}</div>
+                </div>
+            """
+        shoutouts_html = f"""
+            <div class="section-title" style="margin-top: 14px;">📣 SWIFTEMBER SHOUT-OUTS</div>
+            <div class="shoutouts-grid">
+                {cards_html}
+            </div>
+        """
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -367,6 +401,43 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         .progress-bar.blue {{ background: #3b82f6; }}
         .progress-bar.yellow {{ background: #eab308; }}
         .progress-bar.red {{ background: #ef4444; }}
+        .shoutouts-grid {{
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }}
+        .shoutout-card {{
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-left: 4px solid #0284c7;
+            border-radius: 6px;
+            padding: 7px 10px;
+        }}
+        .shoutout-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }}
+        .shoutout-name {{
+            font-size: 10px;
+            font-weight: 700;
+            color: #0369a1;
+        }}
+        .shoutout-tag {{
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 7.5px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 8px;
+        }}
+        .shoutout-msg {{
+            font-size: 8.5px;
+            color: #334155;
+            line-height: 1.35;
+        }}
         .page-break {{ page-break-before: always; }}
         .footer {{ font-size: 8px; color: #94a3b8; text-align: center; margin-top: 14px; border-top: 1px solid #e2e8f0; padding-top: 6px; }}
     </style>
@@ -465,6 +536,8 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             {target_rows}
         </tbody>
     </table>
+
+    {shoutouts_html}
 
     <div class="page-break"></div>
 

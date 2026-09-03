@@ -80,6 +80,43 @@
         .progress-bar.blue { background: #3b82f6; }
         .progress-bar.yellow { background: #eab308; }
         .progress-bar.red { background: #ef4444; }
+        .shoutouts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .shoutout-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-left: 4px solid #0284c7;
+            border-radius: 6px;
+            padding: 7px 10px;
+        }
+        .shoutout-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        .shoutout-name {
+            font-size: 10px;
+            font-weight: 700;
+            color: #0369a1;
+        }
+        .shoutout-tag {
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 7.5px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 8px;
+        }
+        .shoutout-msg {
+            font-size: 8.5px;
+            color: #334155;
+            line-height: 1.35;
+        }
         .page-break { page-break-before: always; }
         .footer { font-size: 8px; color: #94a3b8; text-align: center; margin-top: 14px; border-top: 1px solid #e2e8f0; padding-top: 6px; }
     </style>
@@ -881,6 +918,29 @@
         
         </tbody>
     </table>
+
+    
+            <div class="section-title" style="margin-top: 14px;">📣 SWIFTEMBER SHOUT-OUTS</div>
+            <div class="shoutouts-grid">
+                
+                <div class="shoutout-card">
+                    <div class="shoutout-header">
+                        <span class="shoutout-name">Jack Dean</span>
+                        <span class="shoutout-tag">🏃‍♂️ Chicago Marathon</span>
+                    </div>
+                    <div class="shoutout-msg">Training hard and putting in big miles in preparation for the Chicago Marathon!</div>
+                </div>
+            
+                <div class="shoutout-card">
+                    <div class="shoutout-header">
+                        <span class="shoutout-name">Alice Wilkinson & Jake Colbourn</span>
+                        <span class="shoutout-tag">🏔 50-Mile Ultra (Sep 12)</span>
+                    </div>
+                    <div class="shoutout-msg">Massive good luck to Alice & Jake who are taking on their epic 50-mile Ultra Marathon on September 12th!</div>
+                </div>
+            
+            </div>
+        
 
     <div class="page-break"></div>
 
