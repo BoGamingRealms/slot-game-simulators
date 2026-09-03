@@ -213,27 +213,27 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     by_dist = sorted(active, key=lambda x: x["distance"], reverse=True)
     all_sorted = sorted(matched_runners, key=lambda x: (x["distance"] > 0, x["pct_monthly"], x["distance"]), reverse=True)
 
-    # HTML Rows
+    # HTML Rows - Weekly Leaderboard (Focused on This Week's Performance)
     target_rows = ""
     for i, r in enumerate(by_pct, 1):
         pct_m = r['pct_monthly']
         pct_w = r['pct_weekly']
+        weekly_quota = r['monthly_target'] / 4.0
         bar_color = "green" if pct_w >= 90 else ("yellow" if pct_w >= 60 else "red")
         badge_cls = "badge-ahead" if "Ahead" in r['status'] else ("badge-track" if "On Track" in r['status'] else ("badge-slight" if "Slightly" in r['status'] else "badge-behind"))
-        bar_width = min(100, int(pct_m))
+        bar_width = min(100, int(pct_w))
         target_rows += f"""
             <tr>
                 <td class="text-center" style="font-weight: 700;">{i}</td>
                 <td style="font-weight: 600;">{r['registered_name']}</td>
                 <td class="text-right" style="font-weight: 700;">{r['distance']:.1f} km</td>
-                <td class="text-right">{r['monthly_target']:.0f} km</td>
+                <td class="text-right">{weekly_quota:.1f} km</td>
                 <td class="text-center">
                     <div class="progress-cell">
-                        <span class="progress-val">{pct_m:.1f}%</span>
+                        <span class="progress-val">{pct_w:.1f}%</span>
                         <div class="progress-bar-container"><div class="progress-bar {bar_color}" style="width: {bar_width}%;"></div></div>
                     </div>
                 </td>
-                <td class="text-right" style="font-weight: 700;">{pct_w:.1f}%</td>
                 <td class="text-center">{r['runs']}</td>
                 <td class="text-right">{r['longest']:.1f} km</td>
                 <td class="text-center">{r['pace']}</td>
@@ -242,39 +242,25 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             </tr>
         """
 
-    dist_rows = ""
-    for i, r in enumerate(by_dist[:10], 1):
-        badge_cls = "badge-ahead" if "Ahead" in r['status'] else ("badge-track" if "On Track" in r['status'] else ("badge-slight" if "Slightly" in r['status'] else "badge-behind"))
-        dist_rows += f"""
-            <tr>
-                <td class="text-center" style="font-weight: 700;">#{i}</td>
-                <td style="font-weight: 700;">{r['registered_name']}</td>
-                <td class="text-right" style="font-weight: 700; color: #1e1b4b;">{r['distance']:.1f} km</td>
-                <td class="text-center" style="font-weight: 700;">{r['runs']}</td>
-                <td class="text-right">{r['longest']:.1f} km</td>
-                <td class="text-center">{r['pace']}</td>
-                <td class="text-right" style="font-weight: 700;">{r['elev']}</td>
-                <td>Goal: {r['monthly_target']:.0f} km <span class="status-badge {badge_cls}" style="margin-left: 4px;">{r['status']}</span></td>
-            </tr>
-        """
-
+    # HTML Rows - Full Swiftember Report (Cumulative Challenge Tracking: Month Pledge, Total MTD, Remaining)
     roster_rows = ""
     for i, r in enumerate(all_sorted, 1):
         pct_m = r['pct_monthly']
         pct_w = r['pct_weekly']
+        rem_km = max(0.0, r['monthly_target'] - r['distance'])
+        rem_text = f"{rem_km:.1f} km" if r['distance'] < r['monthly_target'] else "🎉 Done!"
         if r['distance'] == 0:
             badge_cls = "badge-zero"
             status_text = "⚪️ 0 km Logged"
             bar_html = '<div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div>'
-            pace_text = "-"
             runs_text = "0"
+            rem_text = f"{r['monthly_target']:.0f} km"
         else:
             badge_cls = "badge-ahead" if "Ahead" in r['status'] else ("badge-track" if "On Track" in r['status'] else ("badge-slight" if "Slightly" in r['status'] else "badge-behind"))
             status_text = r['status']
             bar_color = "green" if pct_w >= 90 else ("yellow" if pct_w >= 60 else "red")
             bar_width = min(100, int(pct_m))
             bar_html = f'<div class="progress-cell"><span class="progress-val">{pct_m:.1f}%</span><div class="progress-bar-container"><div class="progress-bar {bar_color}" style="width: {bar_width}%;"></div></div></div>'
-            pace_text = f"{pct_w:.1f}%"
             runs_text = str(r['runs'])
 
         roster_rows += f"""
@@ -283,8 +269,8 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
                 <td style="font-weight: 600;">{r['registered_name']}</td>
                 <td class="text-right">{r['monthly_target']:.0f} km</td>
                 <td class="text-right" style="font-weight: 700; color: {'#0f172a' if r['distance'] > 0 else '#94a3b8'};">{r['distance']:.1f} km</td>
+                <td class="text-right" style="color: {'#475569' if r['distance'] > 0 else '#94a3b8'}; font-weight: 500;">{rem_text}</td>
                 <td class="text-center">{bar_html}</td>
-                <td class="text-right">{pace_text}</td>
                 <td class="text-center">{runs_text}</td>
                 <td class="text-center"><span class="status-badge {badge_cls}">{status_text}</span></td>
             </tr>
@@ -577,12 +563,11 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     <table>
         <thead>
             <tr>
-                <th class="text-center" style="width: 30px;">Rank</th>
+                <th class="text-center" style="width: 28px;">Rank</th>
                 <th>Runner Name</th>
-                <th class="text-right">Logged (km)</th>
-                <th class="text-right">Goal (km)</th>
-                <th class="text-center">Monthly Progress</th>
-                <th class="text-right">Weekly Goal %</th>
+                <th class="text-right">Week Logged</th>
+                <th class="text-right">Weekly Goal</th>
+                <th class="text-center">Weekly Goal %</th>
                 <th class="text-center">Runs</th>
                 <th class="text-right">Longest</th>
                 <th class="text-center">Avg Pace</th>
@@ -605,12 +590,12 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             <tr>
                 <th class="text-center" style="width: 25px;">#</th>
                 <th>Participant Name</th>
-                <th class="text-right">Monthly Goal</th>
-                <th class="text-right">Logged This Week</th>
+                <th class="text-right">Monthly Pledge</th>
+                <th class="text-right">Total Logged (MTD)</th>
+                <th class="text-right">Remaining</th>
                 <th class="text-center">Monthly Progress</th>
-                <th class="text-right">Weekly Goal %</th>
-                <th class="text-center">Runs</th>
-                <th class="text-center">Status / Note</th>
+                <th class="text-center">Total Runs</th>
+                <th class="text-center">Challenge Status</th>
             </tr>
         </thead>
         <tbody>
