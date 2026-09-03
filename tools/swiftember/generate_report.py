@@ -458,14 +458,14 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         <div class="super-card">
             <div class="super-icon">🌟</div>
             <div class="super-award">Goal Setter</div>
-            <div class="super-sub">Mid & Long Distance</div>
+            <div class="super-sub">Mid & Long Target Distance</div>
             <div class="super-winner">{pace_setter['registered_name'] if pace_setter else '-'}</div>
             <div class="super-stat">{f"{pace_setter['pct_weekly']:.1f}% Weekly Goal ({pace_setter['distance']:.1f} km)" if pace_setter else '-'}</div>
         </div>
         <div class="super-card">
             <div class="super-icon">🐣</div>
             <div class="super-award">Rising Swift</div>
-            <div class="super-sub">Short Distance</div>
+            <div class="super-sub">Short Target Distance</div>
             <div class="super-winner">{rising_swift['registered_name'] if rising_swift else '-'}</div>
             <div class="super-stat">{f"{rising_swift['pct_weekly']:.1f}% Weekly Goal ({rising_swift['distance']:.1f} km)" if rising_swift else '-'}</div>
         </div>
