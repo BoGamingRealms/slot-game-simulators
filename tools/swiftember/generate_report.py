@@ -316,9 +316,10 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             border: 1px solid #e2e8f0; border-top: 3px solid #6366f1; border-radius: 8px; padding: 8px; text-align: center;
         }}
         .super-icon {{ font-size: 16px; margin-bottom: 2px; }}
-        .super-award {{ font-size: 8.5px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }}
+        .super-award {{ font-size: 8.5px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }}
+        .super-sub {{ font-size: 7.5px; font-weight: 600; color: #64748b; margin-bottom: 3px; }}
         .super-winner {{ font-size: 10.5px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }}
-        .super-stat {{ font-size: 9.5px; font-weight: 600; color: #4338ca; }}
+        .super-stat {{ font-size: 9px; font-weight: 600; color: #4338ca; }}
         .metrics-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }}
         .metric-card {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; text-align: center; }}
         .metric-val {{ font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }}
@@ -386,30 +387,35 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         <div class="super-card">
             <div class="super-icon">🌟</div>
             <div class="super-award">Goal Setter</div>
+            <div class="super-sub">Mid & Long Distance</div>
             <div class="super-winner">{pace_setter['registered_name'] if pace_setter else '-'}</div>
             <div class="super-stat">{f"{pace_setter['pct_weekly']:.1f}% Weekly Goal ({pace_setter['distance']:.1f} km)" if pace_setter else '-'}</div>
         </div>
         <div class="super-card">
             <div class="super-icon">🐣</div>
             <div class="super-award">Rising Swift</div>
+            <div class="super-sub">Short Distance</div>
             <div class="super-winner">{rising_swift['registered_name'] if rising_swift else '-'}</div>
             <div class="super-stat">{f"{rising_swift['pct_weekly']:.1f}% Weekly Goal ({rising_swift['distance']:.1f} km)" if rising_swift else '-'}</div>
         </div>
         <div class="super-card">
             <div class="super-icon">🔥</div>
             <div class="super-award">Road Warrior</div>
+            <div class="super-sub">Most Runs Logged</div>
             <div class="super-winner">{road_warrior['registered_name'] if road_warrior else '-'}</div>
             <div class="super-stat">{f"{road_warrior['runs']} Runs ({road_warrior['distance']:.1f} km)" if road_warrior else '-'}</div>
         </div>
         <div class="super-card">
             <div class="super-icon">🏔</div>
             <div class="super-award">Mountain Goat</div>
+            <div class="super-sub">Most Elevation</div>
             <div class="super-winner">{elev_runner['registered_name'] if elev_runner else '-'}</div>
             <div class="super-stat">{f"{elev_runner['elev']} Elevation" if elev_runner else '-'}</div>
         </div>
         <div class="super-card">
             <div class="super-icon">⚡️</div>
             <div class="super-award">Speed Demon</div>
+            <div class="super-sub">Fastest Avg Pace</div>
             <div class="super-winner">{speed_runner['registered_name'] if speed_runner else '-'}</div>
             <div class="super-stat">{f"{speed_runner['pace']} ({speed_runner['distance']:.1f} km)" if speed_runner else '-'}</div>
         </div>
