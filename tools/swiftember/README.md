@@ -19,7 +19,7 @@ Automated suite to parse Strava Club Leaderboard data and generate the standardi
 
 All future reports generated with this tool are permanently configured with these exact specifications:
 
-1. **Header Banner**: Official Birmingham Swifts logo + `🏃‍♂️ SWIFTEMBER 2026` + `Birmingham Swifts — Week {N} Progress & Leaderboard Report`.
+1. **Header Banner**: Official Birmingham Swifts logo + `🏳️‍🌈 SWIFTEMBER 2026` + `Birmingham Swifts — Week {N} Progress & Leaderboard Report`.
 2. **⚡️ WEEKLY SWIFTEMBER HEROES** (5 Mutually Exclusive Superlative Cards):
    * 🌟 **Goal Setter** (*Mid & Long Target Distance: $\ge 70\text{ km}$*): Top weekly pro-rata surge among medium/long distance target runners (Winner font: `16px`).
    * 🐣 **Rising Swift** (*Short Target Distance: $\le 50\text{ km}$*): Top weekly pro-rata surge among short distance target runners (Winner font: `16px`).

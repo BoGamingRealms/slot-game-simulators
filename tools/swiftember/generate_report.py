@@ -491,7 +491,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         <div class="header-left">
             {logo_html}
             <div class="header-title">
-                <h1>🏃‍♂️ SWIFTEMBER 2026</h1>
+                <h1>🏳️‍🌈 SWIFTEMBER 2026</h1>
                 <p>Birmingham Swifts — Week {week_num} Progress & Leaderboard Report</p>
             </div>
         </div>
