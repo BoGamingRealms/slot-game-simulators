@@ -16,6 +16,7 @@ import unicodedata
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROSTER_PATH = os.path.join(BASE_DIR, "roster.json")
 ALIASES_PATH = os.path.join(BASE_DIR, "aliases.json")
+DATA_DIR = os.path.join(BASE_DIR, "data")
 
 def clean_duplicated_name(name_str):
     """Removes duplicated words/halves from Strava copy-paste."""
@@ -98,10 +99,89 @@ def parse_strava_table(raw_text):
                 continue
     return entries
 
-def process_swiftember_data(strava_entries, roster, aliases, week_num=1):
+def load_historical_stats(up_to_week):
+    """
+    Loads all saved weekly stats for weeks < up_to_week from data/week_{w}_stats.json.
+    Returns a dict mapping runner_name -> list of weekly stat dicts:
+    {
+       "Runner Name": [
+           {"week": 1, "distance": 86.1, "runs": 8, ...},
+           ...
+       ]
+    }
+    """
+    history = {}
+    if not os.path.exists(DATA_DIR):
+        return history
+
+    for w in range(1, up_to_week):
+        stat_file = os.path.join(DATA_DIR, f"week_{w}_stats.json")
+        if os.path.exists(stat_file):
+            try:
+                with open(stat_file, "r", encoding="utf-8") as f:
+                    w_data = json.load(f)
+                    runners = w_data.get("runners", {})
+                    for r_name, r_stats in runners.items():
+                        if r_name not in history:
+                            history[r_name] = []
+                        history[r_name].append({
+                            "week": w,
+                            "distance": float(r_stats.get("distance", 0.0)),
+                            "runs": int(r_stats.get("runs", 0)),
+                            "longest": float(r_stats.get("longest", 0.0)),
+                            "elev": r_stats.get("elev", "-"),
+                            "pace": r_stats.get("pace", "-"),
+                        })
+            except Exception as e:
+                print(f"[WARN] Could not load historical stats for week {w}: {e}")
+    return history
+
+def save_week_stats(week_num, matched_runners):
+    """
+    Saves the current week's individual runner stats to data/week_{week_num}_stats.json.
+    """
+    os.makedirs(DATA_DIR, exist_ok=True)
+    stat_file = os.path.join(DATA_DIR, f"week_{week_num}_stats.json")
+    
+    runners_dict = {}
+    for r in matched_runners:
+        runners_dict[r["registered_name"]] = {
+            "distance": round(r["distance"], 2),
+            "runs": r["runs"],
+            "longest": round(r["longest"], 2),
+            "pace": r["pace"],
+            "elev": r["elev"],
+            "monthly_target": r["monthly_target"],
+            "pct_weekly": round(r["pct_weekly"], 2),
+            "pct_monthly": round(r["pct_monthly"], 2),
+            "status": r["status"],
+            "cum_distance": round(r["cum_distance"], 2),
+            "cum_runs": r["cum_runs"],
+            "cum_status": r["cum_status"]
+        }
+        
+    out_obj = {
+        "week": week_num,
+        "total_registered": len(matched_runners),
+        "active_count": len([r for r in matched_runners if r["distance"] > 0]),
+        "total_distance": round(sum(r["distance"] for r in matched_runners), 2),
+        "total_runs": sum(r["runs"] for r in matched_runners),
+        "cum_distance": round(sum(r["cum_distance"] for r in matched_runners), 2),
+        "cum_runs": sum(r["cum_runs"] for r in matched_runners),
+        "runners": runners_dict
+    }
+    
+    with open(stat_file, "w", encoding="utf-8") as f:
+        json.dump(out_obj, f, indent=2, ensure_ascii=False)
+    print(f"[INFO] Archived Week {week_num} stats to {stat_file}")
+
+def process_swiftember_data(strava_entries, roster, aliases, week_num=1, historical_stats=None):
     matched_runners = []
     unmatched_registered = list(roster.keys())
     expected_week_fraction = week_num / 4.0
+    
+    if historical_stats is None:
+        historical_stats = {}
     
     # Process Strava athletes
     for s in strava_entries:
@@ -125,98 +205,171 @@ def process_swiftember_data(strava_entries, roster, aliases, week_num=1):
         if found:
             unmatched_registered.remove(found)
             monthly_target = roster[found]
-            weekly_pro_rata = monthly_target * expected_week_fraction
-            pct_monthly = (s["distance"] / monthly_target) * 100.0
-            pct_weekly = (s["distance"] / weekly_pro_rata) * 100.0 if weekly_pro_rata > 0 else 0.0
+            weekly_quota = monthly_target / 4.0
             
-            if pct_weekly >= 110.0:
-                status = "🟢 Ahead"
+            # Prior historical weeks stats
+            hist_list = historical_stats.get(found, [])
+            prior_dist = sum(h.get("distance", 0.0) for h in hist_list)
+            prior_runs = sum(h.get("runs", 0) for h in hist_list)
+            
+            this_dist = s["distance"]
+            this_runs = s["runs"]
+            
+            cum_dist = prior_dist + this_dist
+            cum_runs = prior_runs + this_runs
+            
+            pct_monthly = (cum_dist / monthly_target) * 100.0 if monthly_target > 0 else 0.0
+            pct_weekly = (this_dist / weekly_quota) * 100.0 if weekly_quota > 0 else 0.0
+            
+            # Pacing status for this week (Weekly Leaderboard)
+            if this_dist == 0:
+                week_status = "⚪️ 0 km Logged"
+            elif pct_weekly >= 110.0:
+                week_status = "🟢 Ahead"
             elif pct_weekly >= 90.0:
-                status = "🟢 On Track"
+                week_status = "🟢 On Track"
             elif pct_weekly >= 60.0:
-                status = "🟡 Slightly Behind"
+                week_status = "🟡 Slightly Behind"
             else:
-                status = "🔴 Behind"
+                week_status = "🔴 Behind"
+                
+            # Cumulative pacing status for overall challenge (Full Swiftember Report)
+            cum_expected = monthly_target * expected_week_fraction
+            pct_of_expected = (cum_dist / cum_expected) * 100.0 if cum_expected > 0 else 0.0
+            if cum_dist == 0:
+                cum_status = "⚪️ 0 km Logged"
+            elif pct_of_expected >= 110.0:
+                cum_status = "🟢 Ahead"
+            elif pct_of_expected >= 90.0:
+                cum_status = "🟢 On Track"
+            elif pct_of_expected >= 60.0:
+                cum_status = "🟡 Slightly Behind"
+            else:
+                cum_status = "🔴 Behind"
                 
             matched_runners.append({
                 "registered_name": found,
                 "strava_name": c_name,
                 "monthly_target": monthly_target,
-                "weekly_target": weekly_pro_rata,
-                "distance": s["distance"],
-                "runs": s["runs"],
+                "weekly_target": weekly_quota,
+                "distance": this_dist,
+                "runs": this_runs,
                 "longest": s["longest"],
                 "pace": s["pace"],
                 "elev": s["elev"],
                 "pct_monthly": pct_monthly,
                 "pct_weekly": pct_weekly,
-                "status": status,
-                "strava_rank": s["rank"]
+                "status": week_status,
+                "strava_rank": s["rank"],
+                "prior_distance": prior_dist,
+                "prior_runs": prior_runs,
+                "cum_distance": cum_dist,
+                "cum_runs": cum_runs,
+                "cum_status": cum_status
             })
             
-    # Process registered runners with 0 km recorded
+    # Process registered runners with 0 km recorded this week
     for r in unmatched_registered:
         monthly_target = roster[r]
-        weekly_pro_rata = monthly_target * expected_week_fraction
+        weekly_quota = monthly_target / 4.0
+        
+        hist_list = historical_stats.get(r, [])
+        prior_dist = sum(h.get("distance", 0.0) for h in hist_list)
+        prior_runs = sum(h.get("runs", 0) for h in hist_list)
+        
+        cum_dist = prior_dist
+        cum_runs = prior_runs
+        
+        pct_monthly = (cum_dist / monthly_target) * 100.0 if monthly_target > 0 else 0.0
+        pct_weekly = 0.0
+        week_status = "⚪️ 0 km Logged"
+        
+        cum_expected = monthly_target * expected_week_fraction
+        pct_of_expected = (cum_dist / cum_expected) * 100.0 if cum_expected > 0 else 0.0
+        if cum_dist == 0:
+            cum_status = "⚪️ 0 km Logged"
+        elif pct_of_expected >= 110.0:
+            cum_status = "🟢 Ahead"
+        elif pct_of_expected >= 90.0:
+            cum_status = "🟢 On Track"
+        elif pct_of_expected >= 60.0:
+            cum_status = "🟡 Slightly Behind"
+        else:
+            cum_status = "🔴 Behind"
+            
         matched_runners.append({
             "registered_name": r,
             "strava_name": "-",
             "monthly_target": monthly_target,
-            "weekly_target": weekly_pro_rata,
+            "weekly_target": weekly_quota,
             "distance": 0.0,
             "runs": 0,
             "longest": 0.0,
             "pace": "-",
             "elev": "-",
-            "pct_monthly": 0.0,
-            "pct_weekly": 0.0,
-            "status": "⚪️ 0 km Logged",
-            "strava_rank": "-"
+            "pct_monthly": pct_monthly,
+            "pct_weekly": pct_weekly,
+            "status": week_status,
+            "strava_rank": "-",
+            "prior_distance": prior_dist,
+            "prior_runs": prior_runs,
+            "cum_distance": cum_dist,
+            "cum_runs": cum_runs,
+            "cum_status": cum_status
         })
         
     return matched_runners
 
 def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official Swiftember Report", font_size="large"):
     # Target calculations
-    active = [m for m in matched_runners if m["distance"] > 0]
+    weekly_active = [m for m in matched_runners if m["distance"] > 0]
+    mtd_active = [m for m in matched_runners if m["cum_distance"] > 0]
+
     total_pledge = sum(m["monthly_target"] for m in matched_runners)
-    total_logged = sum(m["distance"] for m in active)
-    expected_pace_target = total_pledge * (week_num / 4.0)
-    pct_total_month = (total_logged / total_pledge) * 100.0 if total_pledge > 0 else 0.0
-    pct_pace_rate = (total_logged / expected_pace_target) * 100.0 if expected_pace_target > 0 else 0.0
-    total_runs = sum(m["runs"] for m in active)
+    total_cum_logged = sum(m["cum_distance"] for m in matched_runners)
+    total_week_logged = sum(m["distance"] for m in matched_runners)
+    expected_cum_target = total_pledge * (week_num / 4.0)
+    pct_total_month = (total_cum_logged / total_pledge) * 100.0 if total_pledge > 0 else 0.0
+    pct_pace_rate = (total_cum_logged / expected_cum_target) * 100.0 if expected_cum_target > 0 else 0.0
+    total_cum_runs = sum(m["cum_runs"] for m in matched_runners)
+    total_week_runs = sum(m["runs"] for m in matched_runners)
     
-    # Goal Setter: Medium & Long Distance Target Runners (Monthly Goal >= 70 km)
-    mid_long_active = [m for m in active if m["monthly_target"] >= 70.0]
-    pace_setter = max(mid_long_active, key=lambda x: (x["pct_weekly"], x["distance"])) if mid_long_active else (max(active, key=lambda x: x["pct_monthly"]) if active else None)
-    
-    # Rising Swift: Low-target Category Runners (Monthly Goal <= 50 km)
-    low_target_active = [m for m in active if m["monthly_target"] <= 50.0]
-    rising_swift = max(low_target_active, key=lambda x: (x["pct_weekly"], x["distance"])) if low_target_active else None
-    
-    road_warrior = max(active, key=lambda x: (x["runs"], x["distance"])) if active else None
+    # Barriers between short, medium, and long distance runners decided by average target distance submitted by members
+    avg_target = (total_pledge / len(matched_runners)) if matched_runners else 100.0
+    short_barrier = round((avg_target * 0.5) / 25.0) * 25.0 if avg_target >= 40 else round(avg_target * 0.5)
+    long_barrier = round(avg_target / 25.0) * 25.0 if avg_target >= 40 else round(avg_target)
+
+    # 1. Rising Swift: Weekly goal achieved % most for short distance runners (<= short_barrier)
+    short_active = [m for m in weekly_active if m["monthly_target"] <= short_barrier]
+    rising_swift = max(short_active, key=lambda x: (x["pct_weekly"], x["distance"])) if short_active else None
+
+    # 2. Goal Setter: Weekly goal achieved % most for medium distance runners (short_barrier < target <= long_barrier)
+    med_active = [m for m in weekly_active if short_barrier < m["monthly_target"] <= long_barrier]
+    pace_setter = max(med_active, key=lambda x: (x["pct_weekly"], x["distance"])) if med_active else None
+
+    # 3. Road Warrior: Weekly goal achieved % most for long distance runners (> long_barrier)
+    long_active = [m for m in weekly_active if m["monthly_target"] > long_barrier]
+    road_warrior = max(long_active, key=lambda x: (x["pct_weekly"], x["distance"])) if long_active else None
     
     # Elev climber
     def parse_elev(e_str):
         nums = re.findall(r'\d+', e_str.replace(",", ""))
         return int(nums[0]) if nums else 0
-    elev_runner = max(active, key=lambda x: parse_elev(x["elev"])) if active else None
+    elev_runner = max(weekly_active, key=lambda x: parse_elev(x["elev"])) if weekly_active else None
     
     # Speed demon
     def parse_pace(p_str):
         m = re.match(r'(\d+):(\d+)', p_str)
         return int(m.group(1))*60 + int(m.group(2)) if m else 99999
-    speed_runner = min([m for m in active if parse_pace(m["pace"]) < 99999], key=lambda x: parse_pace(x["pace"])) if active else None
+    speed_runner = min([m for m in weekly_active if parse_pace(m["pace"]) < 99999], key=lambda x: parse_pace(x["pace"])) if weekly_active else None
 
     # Sortings
-    by_pct = sorted(active, key=lambda x: (x["pct_monthly"], x["distance"]), reverse=True)
-    by_dist = sorted(active, key=lambda x: x["distance"], reverse=True)
-    all_sorted = sorted(matched_runners, key=lambda x: (x["distance"] > 0, x["pct_monthly"], x["distance"]), reverse=True)
+    by_weekly_pct = sorted(weekly_active, key=lambda x: (x["pct_weekly"], x["distance"]), reverse=True)
+    all_sorted = sorted(matched_runners, key=lambda x: (x["cum_distance"] > 0, x["pct_monthly"], x["cum_distance"]), reverse=True)
 
     # HTML Rows - Weekly Leaderboard (Focused on This Week's Performance)
     target_rows = ""
-    for i, r in enumerate(by_pct, 1):
-        pct_m = r['pct_monthly']
+    for i, r in enumerate(by_weekly_pct, 1):
         pct_w = r['pct_weekly']
         weekly_quota = r['monthly_target'] / 4.0
         bar_color = "green" if pct_w >= 90 else ("yellow" if pct_w >= 60 else "red")
@@ -246,30 +399,31 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     roster_rows = ""
     for i, r in enumerate(all_sorted, 1):
         pct_m = r['pct_monthly']
-        pct_w = r['pct_weekly']
-        rem_km = max(0.0, r['monthly_target'] - r['distance'])
-        rem_text = f"{rem_km:.1f} km" if r['distance'] < r['monthly_target'] else "🎉 Done!"
-        if r['distance'] == 0:
+        rem_km = max(0.0, r['monthly_target'] - r['cum_distance'])
+        rem_text = f"{rem_km:.1f} km" if r['cum_distance'] < r['monthly_target'] else "🎉 Done!"
+        if r['cum_distance'] == 0:
             badge_cls = "badge-zero"
             status_text = "⚪️ 0 km Logged"
             bar_html = '<div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div>'
             runs_text = "0"
             rem_text = f"{r['monthly_target']:.0f} km"
         else:
-            badge_cls = "badge-ahead" if "Ahead" in r['status'] else ("badge-track" if "On Track" in r['status'] else ("badge-slight" if "Slightly" in r['status'] else "badge-behind"))
-            status_text = r['status']
-            bar_color = "green" if pct_w >= 90 else ("yellow" if pct_w >= 60 else "red")
+            badge_cls = "badge-ahead" if "Ahead" in r['cum_status'] else ("badge-track" if "On Track" in r['cum_status'] else ("badge-slight" if "Slightly" in r['cum_status'] else "badge-behind"))
+            status_text = r['cum_status']
+            cum_expected = r['monthly_target'] * (week_num / 4.0)
+            pct_of_expected = (r['cum_distance'] / cum_expected) * 100.0 if cum_expected > 0 else 0.0
+            bar_color = "green" if pct_of_expected >= 90 else ("yellow" if pct_of_expected >= 60 else "red")
             bar_width = min(100, int(pct_m))
             bar_html = f'<div class="progress-cell"><span class="progress-val">{pct_m:.1f}%</span><div class="progress-bar-container"><div class="progress-bar {bar_color}" style="width: {bar_width}%;"></div></div></div>'
-            runs_text = str(r['runs'])
+            runs_text = str(r['cum_runs'])
 
         roster_rows += f"""
             <tr>
                 <td class="text-center">{i}</td>
                 <td style="font-weight: 600;">{r['registered_name']}</td>
                 <td class="text-right">{r['monthly_target']:.0f} km</td>
-                <td class="text-right" style="font-weight: 700; color: {'#0f172a' if r['distance'] > 0 else '#94a3b8'};">{r['distance']:.1f} km</td>
-                <td class="text-right" style="color: {'#475569' if r['distance'] > 0 else '#94a3b8'}; font-weight: 500;">{rem_text}</td>
+                <td class="text-right" style="font-weight: 700; color: {'#0f172a' if r['cum_distance'] > 0 else '#94a3b8'};">{r['cum_distance']:.1f} km</td>
+                <td class="text-right" style="color: {'#475569' if r['cum_distance'] > 0 else '#94a3b8'}; font-weight: 500;">{rem_text}</td>
                 <td class="text-center">{bar_html}</td>
                 <td class="text-center">{runs_text}</td>
                 <td class="text-center"><span class="status-badge {badge_cls}">{status_text}</span></td>
@@ -353,6 +507,11 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         shout_tag_font = "7.5px"
         shout_msg_font = "8.5px"
         shout_footer_font = "8.5px"
+
+    card_dist_label = "Distance Logged (MTD)" if week_num > 1 else "Distance Logged"
+    card_dist_sub = f"{pct_total_month:.1f}% of Monthly Goal ({total_week_logged:,.1f} km in W{week_num})" if week_num > 1 else f"{pct_total_month:.1f}% of Monthly Goal"
+    card_active_label = "Active Runners (MTD)" if week_num > 1 else "Active Runners"
+    card_active_sub = f"{total_cum_runs} Total Runs ({len(weekly_active)} active in W{week_num})" if week_num > 1 else f"{total_cum_runs} Total Runs"
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -500,25 +659,25 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     <div class="section-title">⚡️ WEEKLY SWIFTEMBER HEROES</div>
     <div class="superlatives-grid">
         <div class="super-card">
-            <div class="super-icon">🌟</div>
-            <div class="super-award">Goal Setter</div>
-            <div class="super-sub">Mid & Long Target Distance</div>
-            <div class="super-winner">{pace_setter['registered_name'] if pace_setter else '-'}</div>
-            <div class="super-stat">{f"{pace_setter['pct_weekly']:.1f}% Weekly Goal ({pace_setter['distance']:.1f} km)" if pace_setter else '-'}</div>
-        </div>
-        <div class="super-card">
             <div class="super-icon">🐣</div>
             <div class="super-award">Rising Swift</div>
-            <div class="super-sub">Short Target Distance</div>
+            <div class="super-sub">Short Target (≤ {short_barrier:.0f} km)</div>
             <div class="super-winner">{rising_swift['registered_name'] if rising_swift else '-'}</div>
             <div class="super-stat">{f"{rising_swift['pct_weekly']:.1f}% Weekly Goal ({rising_swift['distance']:.1f} km)" if rising_swift else '-'}</div>
         </div>
         <div class="super-card">
+            <div class="super-icon">🌟</div>
+            <div class="super-award">Goal Setter</div>
+            <div class="super-sub">Medium Target ({short_barrier+1:.0f}–{long_barrier:.0f} km)</div>
+            <div class="super-winner">{pace_setter['registered_name'] if pace_setter else '-'}</div>
+            <div class="super-stat">{f"{pace_setter['pct_weekly']:.1f}% Weekly Goal ({pace_setter['distance']:.1f} km)" if pace_setter else '-'}</div>
+        </div>
+        <div class="super-card">
             <div class="super-icon">🔥</div>
             <div class="super-award">Road Warrior</div>
-            <div class="super-sub">Most Runs Logged</div>
+            <div class="super-sub">Long Target (> {long_barrier:.0f} km)</div>
             <div class="super-winner">{road_warrior['registered_name'] if road_warrior else '-'}</div>
-            <div class="super-stat">{f"{road_warrior['runs']} Runs ({road_warrior['distance']:.1f} km)" if road_warrior else '-'}</div>
+            <div class="super-stat">{f"{road_warrior['pct_weekly']:.1f}% Weekly Goal ({road_warrior['distance']:.1f} km)" if road_warrior else '-'}</div>
         </div>
         <div class="super-card">
             <div class="super-icon">🏔</div>
@@ -543,19 +702,19 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             <div class="metric-sub">{len(matched_runners)} Registered Runners</div>
         </div>
         <div class="metric-card">
-            <div class="metric-val">{total_logged:,.1f} km</div>
-            <div class="metric-label">Distance Logged</div>
-            <div class="metric-sub">{pct_total_month:.1f}% of Monthly Goal</div>
+            <div class="metric-val">{total_cum_logged:,.1f} km</div>
+            <div class="metric-label">{card_dist_label}</div>
+            <div class="metric-sub">{card_dist_sub}</div>
         </div>
         <div class="metric-card">
             <div class="metric-val">{pct_pace_rate:.1f}%</div>
-            <div class="metric-label">Week {week_num} Goal Progress</div>
-            <div class="metric-sub">{total_logged:,.1f} / {expected_pace_target:,.1f} km Target</div>
+            <div class="metric-label">Week {week_num} Pace Progress</div>
+            <div class="metric-sub">{total_cum_logged:,.1f} / {expected_cum_target:,.1f} km Target</div>
         </div>
         <div class="metric-card">
-            <div class="metric-val">{len(active)} / {len(matched_runners)}</div>
-            <div class="metric-label">Active Runners</div>
-            <div class="metric-sub">{total_runs} Total Runs</div>
+            <div class="metric-val">{len(mtd_active)} / {len(matched_runners)}</div>
+            <div class="metric-label">{card_active_label}</div>
+            <div class="metric-sub">{card_active_sub}</div>
         </div>
     </div>
 
@@ -627,17 +786,27 @@ def main():
         with open(args.input, "r", encoding="utf-8") as f:
             raw_data = f.read()
     else:
-        # Default to mock_strava_data.txt
+        # Check if weekly input file exists in data/
+        week_input_file = os.path.join(DATA_DIR, f"week_{args.week}_strava.txt")
         mock_file = os.path.join(BASE_DIR, "mock_strava_data.txt")
-        if os.path.exists(mock_file):
+        if os.path.exists(week_input_file):
+            print(f"[INFO] Using data file: {week_input_file}")
+            with open(week_input_file, "r", encoding="utf-8") as f:
+                raw_data = f.read()
+        elif os.path.exists(mock_file):
+            print(f"[INFO] Using data file: {mock_file}")
             with open(mock_file, "r", encoding="utf-8") as f:
                 raw_data = f.read()
         else:
             print("[ERROR] No input file provided and mock_strava_data.txt not found.")
             sys.exit(1)
 
+    historical_stats = load_historical_stats(up_to_week=args.week)
     strava_entries = parse_strava_table(raw_data)
-    matched_runners = process_swiftember_data(strava_entries, roster, aliases, week_num=args.week)
+    matched_runners = process_swiftember_data(strava_entries, roster, aliases, week_num=args.week, historical_stats=historical_stats)
+
+    # Save current week stats to data/week_{args.week}_stats.json
+    save_week_stats(args.week, matched_runners)
 
     # Generate HTML
     html_content = generate_html_report(matched_runners, week_num=args.week, badge_subtitle=args.title_sub, font_size=args.font_size)
@@ -663,7 +832,9 @@ def main():
     subprocess.run(chrome_cmd, check=True)
     print(f"\n[SUCCESS] Swiftember Week {args.week} Report successfully generated!")
     print(f"📄 PDF Output: {pdf_path}")
-    print(f"📊 Processed: {len(matched_runners)} registered runners ({len([m for m in matched_runners if m['distance'] > 0])} active)")
+    weekly_active_count = len([m for m in matched_runners if m['distance'] > 0])
+    mtd_active_count = len([m for m in matched_runners if m['cum_distance'] > 0])
+    print(f"📊 Processed: {len(matched_runners)} registered runners ({weekly_active_count} active in W{args.week}, {mtd_active_count} active MTD)")
 
 if __name__ == "__main__":
     main()
