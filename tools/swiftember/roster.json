@@ -47,7 +47,7 @@
     },
     {
       "name": "Chris W",
-      "target_km": 100.0
+      "target_km": 50.0
     },
     {
       "name": "Christopher Bainbridge",
@@ -94,6 +94,10 @@
       "target_km": 200.0
     },
     {
+      "name": "Jack Whitfield",
+      "target_km": 25.0
+    },
+    {
       "name": "Jake Colbourn",
       "target_km": 200.0
     },
@@ -135,7 +139,7 @@
     },
     {
       "name": "Jon Williams",
-      "target_km": 25.0
+      "target_km": 35.0
     },
     {
       "name": "Josh Heer",
@@ -183,7 +187,7 @@
     },
     {
       "name": "Neesa",
-      "target_km": 25.0
+      "target_km": 75.0
     },
     {
       "name": "Patrick Ryan",
@@ -222,8 +226,12 @@
       "target_km": 75.0
     },
     {
+      "name": "Simon Stockdale",
+      "target_km": 150.0
+    },
+    {
       "name": "Thomas Glave",
-      "target_km": 570.0
+      "target_km": 506.0
     },
     {
       "name": "Tom dawson",

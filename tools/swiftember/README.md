@@ -64,9 +64,65 @@ python3 tools/swiftember/generate_report.py --week 2
 
 ---
 
+## 🎨 Permanent Styling & Typography Standards
+
+All weekly reports automatically use these permanent styling and typography presets (the default `--font-size large` configuration):
+
+| Component | Element | Permanent Font Size & Style | Notes |
+| :--- | :--- | :--- | :--- |
+| **Weekly Heroes** | Award Titles (`.super-award`) | **`16px`** Bold Uppercase | E.g. *Rising Swift*, *Goal Setter*, *Mountain Goat* |
+| | Winner Names (`.super-winner`) | **`24px`** Bold | Matches total weekly aggregate stats font size |
+| | Winner Stats (`.super-stat`) | **`10.5px`** Semi-bold | Compact stats below winner name |
+| **Weekly Leaderboard** | Runner Name & Columns | **`16px`** Semi-bold / Bold | High mobile readability across Pages 1–3 |
+| | Excluded Columns | *None* | `Runs`, `Longest Run`, and `Avg Pace` permanently removed |
+| **Member Spotlight** | Athlete Name (`.shoutout-name`)| **`19px`** Bold | Single person per row |
+| | Tag Badge (`.shoutout-tag`) | **`13px`** Bold | E.g., Event / Injury Rehabilitation tag |
+| | Message Body (`.shoutout-msg`) | **`15.5px`** Regular (`1.36` line height) | Professional, supportive tone |
+| | Layout | **Dedicated Page 4** | Generously sized cards filling Page 4 |
+| **Full Report Table** | Participant Name & Columns | **`16px`** Semi-bold / Bold | Consistent typography across Pages 5 & 6 |
+| | Excluded Column | *Total Runs* | Permanently removed from header and rows |
+
+---
+
+## 🚀 How to Run Future Reports (e.g. Week 3, Week 4)
+
+1. **Save Weekly Strava Export**:
+   Export Strava club leaderboard text and save it to:
+   ```
+   tools/swiftember/data/week_<N>_strava.txt
+   ```
+2. **Add Weekly Member Shout-outs**:
+   In `tools/swiftember/shoutouts.json`, add member entries under `"week_<N>"`:
+   ```json
+   {
+     "week_3": [
+       {
+         "name": "Runner Name",
+         "tag": "Event / Rehabilitation Tag",
+         "message": "Professional encouragement and recognition message."
+       }
+     ]
+   }
+   ```
+3. **Execute the Generator**:
+   ```bash
+   python3 tools/swiftember/generate_report.py --week <N>
+   ```
+4. **Automatic Processing**:
+   - Automatically loads all historical archives (`week_1_stats.json` ... `week_<N-1>_stats.json`).
+   - Automatically matches athletes using `roster.json` (60 runners, 5,986 km pledge) and `aliases.json`.
+   - Automatically computes Week $N$ performance, MTD cumulative totals, pro-rata milestones, and awards the 5 Weekly Heroes.
+   - Generates the report with exact permanent typography and exports directly to:
+     ```
+     ~/Downloads/Swiftember_2026_Week<N>_Report.pdf
+     ```
+   - Automatically archives processed statistics to `tools/swiftember/data/week_<N>_stats.json`.
+
+---
+
 ## ⚙️ Command Line Options
 
 * **`-w` / `--week`**: Week number (`1`, `2`, `3`, `4`). Determines expected pro-rata milestone, loads historical stats for prior weeks, and saves the week's archive.
 * **`-i` / `--input`**: Path to the raw Strava leaderboard text file (if omitted, automatically checks `tools/swiftember/data/week_<N>_strava.txt`, then falls back to `mock_strava_data.txt`).
 * **`-o` / `--output-pdf`**: Custom output PDF path (defaults to `~/Downloads/Swiftember_2026_Week<N>_Report.pdf`).
-* **`-f` / `--font-size`**: Typography scale preset (`large` is the default standard, or `compact` for the smaller layout).
+* **`-f` / `--font-size`**: Typography scale preset (`large` is the permanent default standard, or `compact` for legacy compact view).

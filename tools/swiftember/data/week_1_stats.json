@@ -1,11 +1,11 @@
 {
   "week": 1,
-  "total_registered": 58,
-  "active_count": 51,
-  "total_distance": 1453.72,
-  "total_runs": 159,
-  "cum_distance": 1453.72,
-  "cum_runs": 159,
+  "total_registered": 60,
+  "active_count": 53,
+  "total_distance": 1505.13,
+  "total_runs": 163,
+  "cum_distance": 1505.13,
+  "cum_runs": 163,
   "runners": {
     "Bo Wang": {
       "distance": 86.1,
@@ -553,6 +553,20 @@
       "cum_runs": 4,
       "cum_status": "🟢 Ahead"
     },
+    "Jack Whitfield": {
+      "distance": 14.3,
+      "runs": 3,
+      "longest": 7.2,
+      "pace": "5:55 /km",
+      "elev": "114 m",
+      "monthly_target": 25.0,
+      "pct_weekly": 228.8,
+      "pct_monthly": 57.2,
+      "status": "🟢 Ahead",
+      "cum_distance": 14.3,
+      "cum_runs": 3,
+      "cum_status": "🟢 Ahead"
+    },
     "Alice Wilkinson": {
       "distance": 14.1,
       "runs": 2,
@@ -657,13 +671,13 @@
       "longest": 12.87,
       "pace": "-",
       "elev": "-",
-      "monthly_target": 25.0,
-      "pct_weekly": 205.92,
-      "pct_monthly": 51.48,
-      "status": "🟢 Ahead",
+      "monthly_target": 75.0,
+      "pct_weekly": 68.64,
+      "pct_monthly": 17.16,
+      "status": "🟡 Slightly Behind",
       "cum_distance": 12.87,
       "cum_runs": 1,
-      "cum_status": "🟢 Ahead"
+      "cum_status": "🟡 Slightly Behind"
     },
     "Rimon Ali": {
       "distance": 6.45,
@@ -720,6 +734,20 @@
       "cum_distance": 3.01,
       "cum_runs": 1,
       "cum_status": "🔴 Behind"
+    },
+    "Simon Stockdale": {
+      "distance": 37.11,
+      "runs": 1,
+      "longest": 37.11,
+      "pace": "-",
+      "elev": "102 m",
+      "monthly_target": 150.0,
+      "pct_weekly": 98.96,
+      "pct_monthly": 24.74,
+      "status": "🟢 On Track",
+      "cum_distance": 37.11,
+      "cum_runs": 1,
+      "cum_status": "🟢 On Track"
     },
     "Dean Haycock": {
       "distance": 0.0,

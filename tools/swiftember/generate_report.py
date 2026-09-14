@@ -190,7 +190,7 @@ def process_swiftember_data(strava_entries, roster, aliases, week_num=1, histori
         
         # 1. Check exact / normalized match in roster
         found = None
-        for r in list(unmatched_registered):
+        for r in roster:
             if r.lower() == c_name.lower() or normalize(r) == norm_c:
                 found = r
                 break
@@ -198,12 +198,51 @@ def process_swiftember_data(strava_entries, roster, aliases, week_num=1, histori
         # 2. Check aliases map
         if not found:
             for alias_key, target_name in aliases.items():
-                if norm_c == normalize(alias_key) and target_name in unmatched_registered:
+                if norm_c == normalize(alias_key) and target_name in roster:
                     found = target_name
                     break
                     
         if found:
-            unmatched_registered.remove(found)
+            existing = next((m for m in matched_runners if m["registered_name"] == found), None)
+            if existing:
+                existing["distance"] = round(existing["distance"] + s["distance"], 2)
+                existing["runs"] += s["runs"]
+                existing["longest"] = max(existing["longest"], s["longest"])
+                existing["cum_distance"] = round(existing["cum_distance"] + s["distance"], 2)
+                existing["cum_runs"] += s["runs"]
+                
+                monthly_target = existing["monthly_target"]
+                weekly_quota = existing["weekly_target"]
+                existing["pct_monthly"] = (existing["cum_distance"] / monthly_target) * 100.0 if monthly_target > 0 else 0.0
+                existing["pct_weekly"] = (existing["distance"] / weekly_quota) * 100.0 if weekly_quota > 0 else 0.0
+                
+                if existing["distance"] == 0:
+                    existing["status"] = "⚪️ 0 km Logged"
+                elif existing["pct_weekly"] >= 110.0:
+                    existing["status"] = "🟢 Ahead"
+                elif existing["pct_weekly"] >= 90.0:
+                    existing["status"] = "🟢 On Track"
+                elif existing["pct_weekly"] >= 60.0:
+                    existing["status"] = "🟡 Slightly Behind"
+                else:
+                    existing["status"] = "🔴 Behind"
+                    
+                cum_expected = monthly_target * expected_week_fraction
+                pct_of_expected = (existing["cum_distance"] / cum_expected) * 100.0 if cum_expected > 0 else 0.0
+                if existing["cum_distance"] == 0:
+                    existing["cum_status"] = "⚪️ 0 km Logged"
+                elif pct_of_expected >= 110.0:
+                    existing["cum_status"] = "🟢 Ahead"
+                elif pct_of_expected >= 90.0:
+                    existing["cum_status"] = "🟢 On Track"
+                elif pct_of_expected >= 60.0:
+                    existing["cum_status"] = "🟡 Slightly Behind"
+                else:
+                    existing["cum_status"] = "🔴 Behind"
+                continue
+
+            if found in unmatched_registered:
+                unmatched_registered.remove(found)
             monthly_target = roster[found]
             weekly_quota = monthly_target / 4.0
             
@@ -387,15 +426,13 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
                         <div class="progress-bar-container"><div class="progress-bar {bar_color}" style="width: {bar_width}%;"></div></div>
                     </div>
                 </td>
-                <td class="text-center">{r['runs']}</td>
-                <td class="text-right">{r['longest']:.1f} km</td>
-                <td class="text-center">{r['pace']}</td>
                 <td class="text-right">{r['elev']}</td>
                 <td class="text-center"><span class="status-badge {badge_cls}">{r['status']}</span></td>
             </tr>
         """
 
     # HTML Rows - Full Swiftember Report (Cumulative Challenge Tracking: Month Pledge, Total MTD, Remaining)
+    all_sorted = sorted(matched_runners, key=lambda x: (x["cum_distance"] > 0, x["pct_monthly"], x["cum_distance"]), reverse=True)
     roster_rows = ""
     for i, r in enumerate(all_sorted, 1):
         pct_m = r['pct_monthly']
@@ -405,7 +442,6 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             badge_cls = "badge-zero"
             status_text = "⚪️ 0 km Logged"
             bar_html = '<div class="progress-cell"><span class="progress-val" style="color: #94a3b8;">0.0%</span><div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div></div>'
-            runs_text = "0"
             rem_text = f"{r['monthly_target']:.0f} km"
         else:
             badge_cls = "badge-ahead" if "Ahead" in r['cum_status'] else ("badge-track" if "On Track" in r['cum_status'] else ("badge-slight" if "Slightly" in r['cum_status'] else "badge-behind"))
@@ -415,7 +451,6 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             bar_color = "green" if pct_of_expected >= 90 else ("yellow" if pct_of_expected >= 60 else "red")
             bar_width = min(100, int(pct_m))
             bar_html = f'<div class="progress-cell"><span class="progress-val">{pct_m:.1f}%</span><div class="progress-bar-container"><div class="progress-bar {bar_color}" style="width: {bar_width}%;"></div></div></div>'
-            runs_text = str(r['cum_runs'])
 
         roster_rows += f"""
             <tr>
@@ -425,7 +460,6 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
                 <td class="text-right" style="font-weight: 700; color: {'#0f172a' if r['cum_distance'] > 0 else '#94a3b8'};">{r['cum_distance']:.1f} km</td>
                 <td class="text-right" style="color: {'#475569' if r['cum_distance'] > 0 else '#94a3b8'}; font-weight: 500;">{rem_text}</td>
                 <td class="text-center">{bar_html}</td>
-                <td class="text-center">{runs_text}</td>
                 <td class="text-center"><span class="status-badge {badge_cls}">{status_text}</span></td>
             </tr>
         """
@@ -455,35 +489,37 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
                 </div>
             """
         shoutouts_html = f"""
-            <div class="section-title" style="margin-top: 14px;">📣 SWIFTEMBER SHOUT-OUTS</div>
-            <div class="shoutouts-grid">
-                {cards_html}
+            <div class="shoutouts-container">
+                <div class="section-title" style="margin-top: 6px; margin-bottom: 12px; font-size: 15px; padding-bottom: 6px;">📣 MEMBER SPOTLIGHT & EVENT RECOGNITIONS</div>
+                <div class="shoutouts-grid">
+                    {cards_html}
+                </div>
+                <div class="shoutouts-footer">Member highlights and event recognitions will continue in subsequent weekly reports.</div>
             </div>
-            <div class="shoutouts-footer">✨ More shout-outs coming in future weeks!</div>
         """
 
     # Font sizing presets (large vs compact)
     if font_size == "large":
         body_font = "14px"
         table_font = "13px"
-        th_pad = "6px 8px"
+        th_pad = "4.5px 8px"
         th_font = "10px"
-        td_pad = "5.5px 8px"
+        td_pad = "4.0px 8px"
         badge_font = "9.5px"
         badge_pad = "3px 8px"
         prog_val_font = "10.5px"
         prog_bar_w = "55px"
         prog_bar_h = "5.5px"
-        super_award_font = "10px"
+        super_award_font = "16px"
         super_sub_font = "9px"
-        super_winner_font = "16px"
-        super_stat_font = "10px"
+        super_winner_font = "24px"
+        super_stat_font = "10.5px"
         metric_val_font = "24px"
         metric_lbl_font = "11px"
         metric_sub_font = "10px"
-        shout_name_font = "16px"
+        shout_name_font = "19px"
         shout_tag_font = "13px"
-        shout_msg_font = "13px"
+        shout_msg_font = "15.5px"
         shout_footer_font = "13px"
     else: # compact preset
         body_font = "10px"
@@ -513,6 +549,17 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     card_active_label = "Active Runners (MTD)" if week_num > 1 else "Active Runners"
     card_active_sub = f"{total_cum_runs} Total Runs ({len(weekly_active)} active in W{week_num})" if week_num > 1 else f"{total_cum_runs} Total Runs"
 
+    if shoutouts_html:
+        middle_section = f"""
+        <div class="page-break"></div>
+        {shoutouts_html}
+        <div class="page-break"></div>
+        """
+    else:
+        middle_section = """
+        <div class="page-break"></div>
+        """
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -520,7 +567,7 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     <title>Swiftember 2026 - Week {week_num} Progress Report</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        @page {{ size: A4; margin: 9mm 9mm; }}
+        @page {{ size: A4; margin: 8.5mm 8.5mm; }}
         * {{ box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
         body {{
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -541,19 +588,19 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         .superlatives-grid {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-bottom: 11px; }}
         .super-card {{
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid #e2e8f0; border-top: 3px solid #6366f1; border-radius: 8px; padding: 7px; text-align: center;
+            border: 1px solid #e2e8f0; border-top: 3px solid #6366f1; border-radius: 8px; padding: 6px 4px; text-align: center;
         }}
         .super-icon {{ font-size: 16px; margin-bottom: 2px; }}
-        .super-award {{ font-size: {super_award_font}; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }}
+        .super-award {{ font-size: {super_award_font}; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.2px; margin-bottom: 2px; line-height: 1.15; }}
         .super-sub {{ font-size: {super_sub_font}; font-weight: 600; color: #64748b; margin-bottom: 3px; }}
-        .super-winner {{ font-size: {super_winner_font}; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }}
-        .super-stat {{ font-size: {super_stat_font}; font-weight: 600; color: #4338ca; }}
+        .super-winner {{ font-size: {super_winner_font}; font-weight: 800; color: #1e1b4b; margin-bottom: 2px; line-height: 1.15; }}
+        .super-stat {{ font-size: {super_stat_font}; font-weight: 700; color: #4338ca; }}
         .metrics-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-bottom: 11px; }}
         .metric-card {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 11px; text-align: center; }}
         .metric-val {{ font-size: {metric_val_font}; font-weight: 800; color: #0f172a; margin-bottom: 2px; }}
         .metric-label {{ font-size: {metric_lbl_font}; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }}
         .metric-sub {{ font-size: {metric_sub_font}; color: #3b82f6; margin-top: 2px; font-weight: 500; }}
-        table {{ width: 100%; border-collapse: collapse; font-size: {table_font}; margin-bottom: 11px; }}
+        table {{ width: 100%; border-collapse: collapse; font-size: {table_font}; margin-bottom: 7px; }}
         th {{
             background: #f1f5f9; color: #334155; font-weight: 700; text-transform: uppercase;
             font-size: {th_font}; letter-spacing: 0.4px; padding: {th_pad}; border-top: 1px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; text-align: left;
@@ -568,6 +615,50 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         .badge-slight {{ background: #fef9c3; color: #a16207; }}
         .badge-behind {{ background: #fee2e2; color: #b91c1c; }}
         .badge-zero {{ background: #f1f5f9; color: #64748b; }}
+        table.weekly-table {{ font-size: 16px; }}
+        table.weekly-table th {{
+            font-size: 12px;
+            padding: 5.5px 8px;
+            letter-spacing: 0.5px;
+        }}
+        table.weekly-table td {{
+            padding: 4.5px 8px;
+            font-size: 16px;
+        }}
+        table.weekly-table .progress-val {{
+            font-size: 16px;
+        }}
+        table.weekly-table .progress-bar-container {{
+            width: 75px;
+            height: 6px;
+        }}
+        table.weekly-table .status-badge {{
+            font-size: 12px;
+            padding: 3.5px 10px;
+        }}
+        table.full-table {{ font-size: 16px; }}
+        table.full-table th {{
+            font-size: 12px;
+            padding: 4.5px 8px;
+            letter-spacing: 0.5px;
+        }}
+        table.full-table td {{
+            padding: 2.2px 8px;
+            font-size: 16px;
+            line-height: 1.18;
+        }}
+        table.full-table .progress-val {{
+            font-size: 13.5px;
+            line-height: 1.1;
+        }}
+        table.full-table .progress-bar-container {{
+            width: 70px;
+            height: 5px;
+        }}
+        table.full-table .status-badge {{
+            font-size: 11.5px;
+            padding: 2.5px 8px;
+        }}
         .progress-cell {{
             display: flex;
             flex-direction: column;
@@ -598,21 +689,25 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         .shoutouts-grid {{
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            margin-bottom: 8px;
+            gap: 7px;
+            margin-bottom: 7px;
         }}
         .shoutout-card {{
             background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
             border: 1px solid #bae6fd;
-            border-left: 4px solid #0284c7;
-            border-radius: 6px;
-            padding: 6px 10px;
+            border-left: 5px solid #0284c7;
+            border-radius: 7px;
+            padding: 7px 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }}
         .shoutout-header {{
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
+            gap: 10px;
         }}
         .shoutout-name {{
             font-size: {shout_name_font};
@@ -624,13 +719,14 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             color: #ffffff;
             font-size: {shout_tag_font};
             font-weight: 700;
-            padding: 2px 8px;
+            padding: 2.5px 8px;
             border-radius: 6px;
+            white-space: nowrap;
         }}
         .shoutout-msg {{
             font-size: {shout_msg_font};
             color: #334155;
-            line-height: 1.35;
+            line-height: 1.36;
         }}
         .shoutouts-footer {{
             text-align: center;
@@ -638,11 +734,11 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
             font-weight: 600;
             color: #64748b;
             font-style: italic;
-            margin-top: 4px;
-            margin-bottom: 7px;
+            margin-top: 6px;
+            margin-bottom: 4px;
         }}
         .page-break {{ page-break-before: always; }}
-        .footer {{ font-size: 8px; color: #94a3b8; text-align: center; margin-top: 14px; border-top: 1px solid #e2e8f0; padding-top: 6px; }}
+        .footer {{ font-size: 8px; color: #94a3b8; text-align: center; margin-top: 6px; border-top: 1px solid #e2e8f0; padding-top: 4px; }}
     </style>
 </head>
 <body>
@@ -719,17 +815,14 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
     </div>
 
     <div class="section-title">🎯 WEEKLY ACHIEVEMENT LEADERBOARD</div>
-    <table>
+    <table class="weekly-table">
         <thead>
             <tr>
-                <th class="text-center" style="width: 28px;">Rank</th>
+                <th class="text-center" style="width: 34px;">Rank</th>
                 <th>Runner Name</th>
                 <th class="text-right">Week Logged</th>
                 <th class="text-right">Weekly Goal</th>
                 <th class="text-center">Weekly Goal %</th>
-                <th class="text-center">Runs</th>
-                <th class="text-right">Longest</th>
-                <th class="text-center">Avg Pace</th>
                 <th class="text-right">Elevation</th>
                 <th class="text-center">Status</th>
             </tr>
@@ -739,12 +832,10 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
         </tbody>
     </table>
 
-    {shoutouts_html}
-
-    <div class="page-break"></div>
+    {middle_section}
 
     <div class="section-title">📋 FULL SWIFTEMBER REPORT</div>
-    <table>
+    <table class="full-table">
         <thead>
             <tr>
                 <th class="text-center" style="width: 25px;">#</th>
@@ -753,7 +844,6 @@ def generate_html_report(matched_runners, week_num=1, badge_subtitle="Official S
                 <th class="text-right">Total Logged (MTD)</th>
                 <th class="text-right">Remaining</th>
                 <th class="text-center">Monthly Progress</th>
-                <th class="text-center">Total Runs</th>
                 <th class="text-center">Challenge Status</th>
             </tr>
         </thead>

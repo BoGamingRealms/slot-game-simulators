@@ -106,3 +106,4 @@ Rank	Athlete	Distance	Runs	Longest Run	Average Pace	Elev Gain
 105	Adrián Nieves	7.01km	1	7.01km	-	-
 106	Max D	6.36km	1	6.39km	-	-
 107	Bradley M	3.01km	1	3.01km	-	18m
+108	Simon Stockdale	37.11 km	1	37.11 km	-	102 m
