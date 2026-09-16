@@ -385,7 +385,7 @@ public class CashVortexConfig
         {
             OutcomeId = 1,
             Description = "2 Cash Coins",
-            WeightsBySpaceBucket = new[] { 400, 300, 200, 100, 20 },
+            WeightsBySpaceBucket = new[] { 400, 300, 200, 100, 0 },
             Items = new List<BonusOutcomeItem> { new() { Type = SymbolType.CashCoin, Count = 2 } }
         });
         config.BonusOutcomeDefs.Add(new BonusOutcomeDef
