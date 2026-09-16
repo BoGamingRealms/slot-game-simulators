@@ -123,7 +123,20 @@ public class CashVortexExcelLoader
             // Detect section headers only if not a data row
             if (!isDataRowWithNumber)
             {
-                if (checkStr.StartsWith("Table Selections", StringComparison.OrdinalIgnoreCase))
+                if (checkStr.StartsWith("X Wheel - Pot", StringComparison.OrdinalIgnoreCase) || checkStr.StartsWith("X Wheel Pot", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "X Wheel Pot Chance";
+                    continue;
+                }
+                else if (checkStr.StartsWith("X Wheel - Wheel Bonus", StringComparison.OrdinalIgnoreCase) ||
+                         checkStr.StartsWith("X Wheel - Trigger", StringComparison.OrdinalIgnoreCase) ||
+                         checkStr.StartsWith("X Wheel Trigger", StringComparison.OrdinalIgnoreCase) ||
+                         checkStr.StartsWith("Wheel Bonus Trigger", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSection = "X Wheel Trigger Chance";
+                    continue;
+                }
+                else if (checkStr.StartsWith("Table Selections", StringComparison.OrdinalIgnoreCase))
                 {
                     currentSection = "Table Selections";
                     continue;
@@ -219,6 +232,40 @@ public class CashVortexExcelLoader
 
             switch (currentSection)
             {
+                case "X Wheel Pot Chance":
+                    if (TryParseInt(row, 1, out int potWeight))
+                    {
+                        config.XWheelPotWeights.Add(new XWheelPotWeightDef
+                        {
+                            PotId = config.XWheelPotWeights.Count,
+                            PotName = col0,
+                            Weight = potWeight
+                        });
+                    }
+                    break;
+
+                case "X Wheel Trigger Chance":
+                    if (TryParseInt(row, 1, out int trigWeight))
+                    {
+                        if (col0.Contains("1", StringComparison.OrdinalIgnoreCase))
+                        {
+                            config.XWheelTriggerBaseWeightWheel1 = trigWeight;
+                        }
+                        else if (col0.Contains("2", StringComparison.OrdinalIgnoreCase))
+                        {
+                            config.XWheelTriggerBaseWeightWheel2 = trigWeight;
+                        }
+                        else if (col0.Contains("3", StringComparison.OrdinalIgnoreCase))
+                        {
+                            config.XWheelTriggerBaseWeightWheel3 = trigWeight;
+                        }
+                        else if (col0.Contains("Not", StringComparison.OrdinalIgnoreCase) || col0.Contains("No", StringComparison.OrdinalIgnoreCase))
+                        {
+                            config.XWheelTriggerNoTriggerWeight = trigWeight;
+                        }
+                    }
+                    break;
+
                 case "Table Selections":
                     if (TryParseInt(row, 1, out int tWeight))
                     {
@@ -245,6 +292,13 @@ public class CashVortexExcelLoader
                     break;
 
                 case "Special Symbols":
+                    if (col0.Equals("X", StringComparison.OrdinalIgnoreCase) ||
+                        col0.Equals("X Wheel", StringComparison.OrdinalIgnoreCase) ||
+                        col0.Equals("X Symbol", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // X symbol is removed from the game
+                        break;
+                    }
                     if (TryParseInt(row, 1, out int symWeight))
                     {
                         config.SpecialSymbolDefs.Add(new SpecialSymbolDef
@@ -701,6 +755,13 @@ public class CashVortexExcelLoader
 
     private static void EnsureDefaultConfigTables(CashVortexConfig config)
     {
+        if (config.XWheelPotWeights.Count == 0)
+        {
+            config.XWheelPotWeights.Add(new XWheelPotWeightDef { PotId = 0, PotName = "Wheel 1 Pot", Weight = 230 });
+            config.XWheelPotWeights.Add(new XWheelPotWeightDef { PotId = 1, PotName = "Wheel 2 Pot", Weight = 150 });
+            config.XWheelPotWeights.Add(new XWheelPotWeightDef { PotId = 2, PotName = "Wheel 3 Pot", Weight = 20 });
+        }
+
         if (config.TableSelections.Count == 0)
         {
             config.TableSelections.Add(new TableSelection { TableId = 0, Description = "Low Symbol Chance", Weight = 1000 });
@@ -724,7 +785,6 @@ public class CashVortexExcelLoader
             config.SpecialSymbolDefs.Add(new SpecialSymbolDef { SymbolId = 4, SymbolName = "Mini Strike", Weight = 1000 });
             config.SpecialSymbolDefs.Add(new SpecialSymbolDef { SymbolId = 5, SymbolName = "Mega Strike", Weight = 300 });
             config.SpecialSymbolDefs.Add(new SpecialSymbolDef { SymbolId = 6, SymbolName = "Ultra Strike", Weight = 100 });
-            config.SpecialSymbolDefs.Add(new SpecialSymbolDef { SymbolId = 7, SymbolName = "X Wheel", Weight = 1000 });
         }
 
         if (config.JackpotCoins.Count == 0)
@@ -776,7 +836,7 @@ public class CashVortexExcelLoader
             config.MiniWheelPrizes.Add(ParsePrizeDef(0, "x2", 1000));
             config.MiniWheelPrizes.Add(ParsePrizeDef(1, "2", 1000));
             config.MiniWheelPrizes.Add(ParsePrizeDef(2, "Mini Jackpot", 500));
-            config.MiniWheelPrizes.Add(ParsePrizeDef(3, "Upgrade", 300));
+            config.MiniWheelPrizes.Add(ParsePrizeDef(3, "5", 300));
         }
 
         if (config.MegaWheelPrizes.Count == 0)
@@ -784,7 +844,7 @@ public class CashVortexExcelLoader
             config.MegaWheelPrizes.Add(ParsePrizeDef(0, "x3", 1000));
             config.MegaWheelPrizes.Add(ParsePrizeDef(1, "3", 1000));
             config.MegaWheelPrizes.Add(ParsePrizeDef(2, "Mega Jackpot", 300));
-            config.MegaWheelPrizes.Add(ParsePrizeDef(3, "Upgrade", 200));
+            config.MegaWheelPrizes.Add(ParsePrizeDef(3, "Lock & Slingo", 200));
         }
 
         if (config.UltraWheelPrizes.Count == 0)

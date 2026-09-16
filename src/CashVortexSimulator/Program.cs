@@ -1079,6 +1079,22 @@ class Program
         Console.WriteLine("            'DATA' TAB CONFIGURATION TABLE (TAB-SEPARATED FOR EXCEL/SHEETS)              ");
         Console.WriteLine("=========================================================================================\n");
 
+        // 0. X Wheel - Pot Chance
+        Console.WriteLine("X Wheel - Pot Chance\tWeight");
+        foreach (var pot in config.XWheelPotWeights)
+        {
+            Console.WriteLine($"{pot.PotName}\t{pot.Weight}");
+        }
+        Console.WriteLine();
+
+        // 0.1 X Wheel - Wheel Bonus Triggering Chance
+        Console.WriteLine("X Wheel - Wheel Bonus Triggering Chance\tWeight");
+        Console.WriteLine($"Wheel 1\t{config.XWheelTriggerBaseWeightWheel1}");
+        Console.WriteLine($"Wheel 2\t{config.XWheelTriggerBaseWeightWheel2}");
+        Console.WriteLine($"Wheel 3\t{config.XWheelTriggerBaseWeightWheel3}");
+        Console.WriteLine($"Not Triggered\t{config.XWheelTriggerNoTriggerWeight}");
+        Console.WriteLine();
+
         // 1. Table Selections
         Console.WriteLine("Table Selections\tWeight");
         foreach (var ts in config.TableSelections)
@@ -1294,6 +1310,34 @@ class Program
         Console.WriteLine("=========================================================================================");
 
         int diffCount = 0;
+
+        // 0. X-Wheel Pot Chances
+        if (loaded.XWheelPotWeights.Count != balanced.XWheelPotWeights.Count)
+        {
+            Console.WriteLine($"[DIFF] XWheelPotWeights count mismatch: Loaded={loaded.XWheelPotWeights.Count} vs Balanced={balanced.XWheelPotWeights.Count}");
+            diffCount++;
+        }
+        else
+        {
+            for (int i = 0; i < loaded.XWheelPotWeights.Count; i++)
+            {
+                if (loaded.XWheelPotWeights[i].Weight != balanced.XWheelPotWeights[i].Weight)
+                {
+                    Console.WriteLine($"[DIFF] Pot '{loaded.XWheelPotWeights[i].PotName}' Weight: Loaded={loaded.XWheelPotWeights[i].Weight} vs Balanced={balanced.XWheelPotWeights[i].Weight}");
+                    diffCount++;
+                }
+            }
+        }
+
+        // 0.1 X-Wheel Trigger Base Weights
+        if (loaded.XWheelTriggerBaseWeightWheel1 != balanced.XWheelTriggerBaseWeightWheel1 ||
+            loaded.XWheelTriggerBaseWeightWheel2 != balanced.XWheelTriggerBaseWeightWheel2 ||
+            loaded.XWheelTriggerBaseWeightWheel3 != balanced.XWheelTriggerBaseWeightWheel3 ||
+            loaded.XWheelTriggerNoTriggerWeight != balanced.XWheelTriggerNoTriggerWeight)
+        {
+            Console.WriteLine($"[DIFF] X-Wheel Trigger Weights: Loaded=({loaded.XWheelTriggerBaseWeightWheel1},{loaded.XWheelTriggerBaseWeightWheel2},{loaded.XWheelTriggerBaseWeightWheel3},No:{loaded.XWheelTriggerNoTriggerWeight}) vs Balanced=({balanced.XWheelTriggerBaseWeightWheel1},{balanced.XWheelTriggerBaseWeightWheel2},{balanced.XWheelTriggerBaseWeightWheel3},No:{balanced.XWheelTriggerNoTriggerWeight})");
+            diffCount++;
+        }
 
         // 1. Table Selections
         if (loaded.TableSelections.Count != balanced.TableSelections.Count)
@@ -1513,10 +1557,7 @@ class Program
             }
         }
 
-        // 17. Bonus X-Wheels
-        AuditWheelPrizeList("Bonus Mini Wheel", loaded.BonusMiniWheelPrizes, balanced.BonusMiniWheelPrizes, ref diffCount);
-        AuditWheelPrizeList("Bonus Mega Wheel", loaded.BonusMegaWheelPrizes, balanced.BonusMegaWheelPrizes, ref diffCount);
-        AuditWheelPrizeList("Bonus Ultra Wheel", loaded.BonusUltraWheelPrizes, balanced.BonusUltraWheelPrizes, ref diffCount);
+
 
         if (diffCount == 0)
         {

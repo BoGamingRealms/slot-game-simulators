@@ -1,18 +1,20 @@
 # GAME SPECIFICATION
 # CASH VORTEX: TRIPLE POWER™
 **Game Specification for Frontend Developers, Game Designers & QA**  
-**Version:** 2.0 (Consolidated Triple Power Engine)  
+**Version:** 3.0 (3-Pot Expired Coins Engine & Independent X-Wheels)  
 **Target Platform:** Mobile, Tablet & Desktop (HTML5 / WebGL)  
 **Grid Format:** 5×5 Matrix (25 Reel Positions)  
-**Pay Mechanism:** 12 Slingo Lines + Persistent Lock & Win Mechanics  
+**Pay Mechanism:** 12 Slingo Lines + Persistent Lock & Win Mechanics + 3-Pot Top Wheels  
 
 ---
 
 ## 1. Executive Summary & High Concept
 
-**Cash Vortex: Triple Power™** combines the thrill of Slingo line completion with persistent locking cash symbols, explosive modifier mechanics (Strikes and Vortexes), a 3-tier top wheel progression system (X-Wheels), an independent center-reel wheel bonus, and a dedicated 5×5 **Lock & Slingo™** respin bonus feature.
+**Cash Vortex: Triple Power™** combines the thrill of Slingo line completion with persistent locking cash symbols, explosive modifier mechanics (Strikes and Vortexes), a **3-Pot X-Wheel Bonus System** powered by flying expired coins, an independent center-reel wheel bonus, and a dedicated 5×5 **Lock & Slingo™** respin bonus feature.
 
 Unlike traditional slots where symbols disappear after every spin, symbols in Cash Vortex hold a **3-spin lifespan**, staying locked on the reels to help players complete 5-symbol **Slingo Lines** (horizontal, vertical, and diagonal). When Slingo lines complete, they award the sum of all cash values along that line. If a completed line crosses through the **Central Wild Star**, it triggers the **Center Wild Wheel Bonus**.
+
+At the start of each spin, all expired coins (both un-won coins whose 3-spin lifespan has finished and coins that won on the previous spin) fly up to the **3 X-Wheel Pots** (Mini Wheel Pot, Mega Wheel Pot, Ultra Wheel Pot) above the reels. Each expired coin contributes to a pot, visually growing it and dynamically increasing the chance to trigger that specific wheel bonus!
 
 ---
 
@@ -20,8 +22,8 @@ Unlike traditional slots where symbols disappear after every spin, symbols in Ca
 
 ```
 +-------------------------------------------------------------+
-|                     TOP OF REELS: X-WHEELS                  |
-|   [ Wheel 1: Mini ]   -->   [ Wheel 2: Mega ]   -->   [ Wheel 3: Ultra ]   |
+|              TOP OF REELS: 3 X-WHEEL POTS                   |
+|   [ Pot 1: Mini Wheel ]  [ Pot 2: Mega Wheel ]  [ Pot 3: Ultra Wheel ]   |
 +-------------------------------------------------------------+
 |                                                             |
 |   [0,0]       [0,1]       [0,2]       [0,3]       [0,4]     |
@@ -38,11 +40,11 @@ Unlike traditional slots where symbols disappear after every spin, symbols in Ca
 ### Visual Components:
 1. **The 5×5 Main Grid:** 25 cell positions indexed from `(0,0)` to `(4,4)`.
    * The center cell `(2,2)` is permanently occupied in the base game by the **Central Wild Star**.
-2. **Top-of-Reels X-Wheels HUD:** A 3-wheel visual apparatus displayed above the reels:
-   * **Wheel 1 (Mini):** Base level wheel.
-   * **Wheel 2 (Mega):** Mid tier wheel with enhanced rewards.
-   * **Wheel 3 (Ultra):** Top tier wheel with maximum jackpots and multipliers.
-3. **Symbol Life Indicators:** Every active coin on the grid features an animated visual life meter (e.g. 3 glowing gems or a circular countdown gauge: `3` $\rightarrow$ `2` $\rightarrow$ `1` $\rightarrow$ expired/popped).
+2. **Top-of-Reels 3-Pot X-Wheels HUD:** 3 interactive wheel pots displayed above the reels:
+   * **Pot 1 (Mini Wheel):** Frequent base tier prize wheel.
+   * **Pot 2 (Mega Wheel):** Mid tier prize wheel with enhanced rewards and direct Lock & Slingo access.
+   * **Pot 3 (Ultra Wheel):** Premium top tier prize wheel with Ultra Jackpot (500x) and massive multipliers.
+3. **Symbol Life Indicators:** Every active coin on the grid features an animated visual life meter (`3` $\rightarrow$ `2` $\rightarrow$ `1` $\rightarrow$ expired/flying to pots).
 4. **Slingo Paylines Overlay:** 12 predefined winning lines across the grid (5 Horizontal, 5 Vertical, 2 Diagonal).
 
 ---
@@ -53,96 +55,91 @@ Unlike traditional slots where symbols disappear after every spin, symbols in Ca
 | :--- | :--- | :--- | :--- |
 | **Central Wild Star** | Gold Glowing Star at `(2,2)` | `0.0x` (No cash) | Permanent Wild. Completes any row, column, or diagonal passing through the center. Never expires and is never removed from the grid. |
 | **Blank** | Transparent / Dark Cell | `0.0x` | Empty position where new symbols can land. |
-| **Cash Coin** | Bronze/Silver/Gold Coin | `0.2x` – `5.0x` Bet | Holds a cash value. Starts with **3 Lives**. |
+| **Cash Coin** | Bronze/Silver/Gold Coin | `0.2x` – `5.0x` Bet | Holds a cash value. Starts with **3 Lives**. When expired or won, flies to one of the 3 top wheel pots. |
 | **Jackpot Coin** | Ruby / Sapphire / Diamond Coin | `Mini` (5x), `Mega` (50x), `Ultra` (500x) | Fixed Jackpot coin. Starts with **3 Lives**. **Strictly isolated from modifiers.** |
 | **Mini Strike** | Blue Lightning Coin | Variable (`0.2x`–`5.0x`) | On landing, adds its cash value to all **4 orthogonal neighbors** (Up, Down, Left, Right). |
 | **Mega Strike** | Purple Lightning Coin | Variable (`0.2x`–`5.0x`) | On landing, adds its cash value to **all symbols sharing any Slingo line** with this cell. |
 | **Ultra Strike** | Gold Lightning Coin | Variable (`0.2x`–`5.0x`) | On landing, adds its cash value to **all valuable symbols across the entire 5×5 grid**. |
-| **Mini Vortex** | Blue Swirling Portal | Starts at `0.0x` | On landing, **gathers and sums** cash values of all **4 orthogonal neighbors** into itself. |
-| **Mega Vortex** | Purple Swirling Portal | Starts at `0.0x` | On landing, **gathers and sums** cash values of **all symbols sharing any Slingo line** into itself. |
-| **Ultra Vortex** | Gold Swirling Portal | Starts at `0.0x` | On landing, **gathers and sums** cash values of **all valuable symbols across the entire grid** into itself. |
-| **X Symbol** | Neon Multiplier 'X' Coin | `1.0x` Bet | Starts with 3 Lives. On landing, immediately triggers the **Top X-Wheels Feature**. |
+| **Mini Vortex** | Blue Swirling Portal | Starts at `1.0x` | On landing, **gathers and sums** cash values of all **4 orthogonal neighbors** into itself. |
+| **Mega Vortex** | Purple Swirling Portal | Starts at `2.0x` | On landing, **gathers and sums** cash values of **all symbols sharing any Slingo line** into itself. |
+| **Ultra Vortex** | Gold Swirling Portal | Starts at `5.0x` | On landing, **gathers and sums** cash values of **all valuable symbols across the entire grid** into itself. |
+
+*(Note: There is no X symbol in this game. All wheel triggering is driven by the 3-pot expired coins system).*
 
 ---
 
 ## 4. Base Game Mechanics & Execution Sequence
 
-When the player presses **SPIN**, the frontend animation and visual state transitions **MUST** execute in the following exact chronological sequence:
+When the player presses **SPIN**, the game resolves in the following exact chronological sequence:
 
 ```mermaid
 flowchart TD
-    A[1. SPIN INITIATION: Deduct Bet] --> B[2. CLEANUP & LIFE DECREMENT: Expired/Won Coins Clear, Remaining -1 Life]
-    B --> C[3. SYMBOL LANDING: New Symbols Land on Empty Grid Cells]
-    C --> D[4. STRIKE RESOLUTION: Mini/Mega/Ultra Strikes Add Value Boosts]
-    D --> E[5. VORTEX RESOLUTION: Mini/Mega/Ultra Vortexes Collect & Sum Values]
-    E --> F[6. X-WHEEL RESOLUTION: If X Landed, Spin Top Wheels]
-    F --> G[7. LIFESPAN RESETS: Line-Sharing Existing Coins Reset to 3 Lives]
-    G --> H[8. SLINGO LINE EVALUATION: Highlight 12 Lines, Award Line Payouts]
-    H --> I{Center Wild Crossed?}
-    I -- Yes --> J[9. CENTER WILD WHEEL BONUS: Popup Center Wheel Spins & Awards Prize]
-    I -- No --> K[10. WIN CELEBRATION & HUD UPDATE]
-    J --> K
+    A[1. SPIN START: Expired Coins Identified] --> B[2. POT FLIGHT: Expired Coins Fly to 3 Top Pots]
+    B --> C[3. DYNAMIC TRIGGER ROLL: Evaluate Single Roll for Wheel Bonus]
+    C --> D[4. GRID CLEANUP: Expired Coins Clear, Active Coins -1 Life]
+    D --> E{Wheel Bonus Triggered?}
+    E -- Yes --> F[5A. LAND CASH COINS: No Special Symbols Land]
+    F --> G[6A. PLAY WHEEL BONUS: Triggered Wheel Spins & Awards Prize]
+    E -- No --> H[5B. SPECIAL SYMBOL ROLL: Roll Special Symbol if Active]
+    H --> I[6B. STRIKE & VORTEX RESOLUTION: Modifiers Execute Boosts & Collects]
+    G --> J[7. LIFESPAN RESETS: Line-Sharing Existing Coins Reset to 3 Lives]
+    I --> J
+    J --> K[8. SLINGO LINE EVALUATION: Award 12 Slingo Lines Payout]
+    K --> L{Center Wild Line Crossed?}
+    L -- Yes --> M[9. CENTER WILD WHEEL BONUS: Popup Center Wheel Awards Prize]
+    L -- No --> N[10. WIN CELEBRATION & HUD UPDATE]
+    M --> N
 ```
 
 ### Detailed Sequence Breakdown:
 
-### Step 1: Cleanup & Lifespan Decrement Phase
-Before new symbols land on the grid:
-1. **Remove Won Symbols:** Any symbol that was part of a winning Slingo line on the previous spin is removed (fades/pops), freeing up its cell into a `Blank`.
-2. **Remove Expired Symbols:** Any existing symbol that had only `1 Life` remaining (and was not part of a winning line) expires and disappears.
-3. **Decrement Lifespans:** All surviving symbols on the board have their life counter reduced by 1 (`3` $\rightarrow$ `2`, or `2` $\rightarrow$ `1`).
-4. *Exception:* The **Central Wild Star** at `(2,2)` is permanent and is never decremented or cleared.
+### Step 1: Expired Coins Pot Flight & Dynamic Trigger Phase
+Before new symbols land on the reels:
+1. **Identify Expired Coins:** All coins that won on the previous spin (`WonThisSpin = true`) or reached the end of their 3-spin lifespan (`LifeRemaining <= 1`) are identified as expiring coins.
+2. **Pot Destination Sampling:** Each expired coin independently samples which pot it flies to based on the Pot Chance weight table:
+   * **Wheel 1 Pot (Mini):** Weight = 230
+   * **Wheel 2 Pot (Mega):** Weight = 150
+   * **Wheel 3 Pot (Ultra):** Weight = 20
+   This produces counts $N_1$, $N_2$, and $N_3$ of coins flying to each pot.
+3. **Dynamic Single-Roll Trigger Weight Calculation:**
+   $$\text{Weight Pot 1} = N_1 \times 1000$$
+   $$\text{Weight Pot 2} = N_2 \times 100$$
+   $$\text{Weight Pot 3} = N_3 \times 20$$
+   $$\text{Weight No-Trigger} = 100000$$
+   $$\text{Total Weight} = W_1 + W_2 + W_3 + W_{\text{No-Trigger}}$$
+4. **Single Random Roll:** A single roll determines if Pot 1 (Mini Wheel), Pot 2 (Mega Wheel), Pot 3 (Ultra Wheel), or No Wheel triggers. At most one wheel bonus triggers per spin.
+5. **Grid Cleanup:** Expired coins disappear from the grid, and surviving coins have their life counter decremented by 1 (`3` $\rightarrow$ `2`, or `2` $\rightarrow$ `1`).
 
-### Step 2: Symbol Landing Phase
-1. New symbols land only on available `Blank` grid positions.
-2. Every newly landed symbol initializes with **3 Lives** (`LifeRemaining = 3`).
-3. **Guaranteed Symbol Rule:** A spin is never completely blank; at least 1 symbol is guaranteed to land on every spin as long as an empty space exists.
+### Step 2: Symbol Landing & Wheel Execution Phase
+* **Case A: Wheel Bonus Triggered:**
+  1. Special symbol selection is **bypassed** (no special symbols land on this spin).
+  2. Empty grid positions are filled with Cash Coins / Blanks according to the active table.
+  3. The triggered wheel (Mini, Mega, or Ultra) immediately spins and awards its prize:
+     * **Multiplier (`x2`, `x3`, `x4`, `x5`, `x10`):** Multiplies all non-blank cash coins currently on the board.
+     * **Ultra Strike (`1`, `2`, `3`, `4`, `5`):** Adds fixed cash boost to all non-blank cash coins across the entire board.
+     * **Direct Jackpot (`Mini`, `Mega`, `Ultra`):** Directly pays out the jackpot to the player.
+     * **Lock & Slingo:** Triggers the Lock & Slingo™ Bonus Game!
+* **Case B: No Wheel Bonus Triggered:**
+  1. The game evaluates special symbol selection normally (pool includes Jackpot Coins, Mini/Mega/Ultra Strikes, and Mini/Mega/Ultra Vortexes; no X symbol).
+  2. Empty positions are filled with Cash Coins / Blanks.
+  3. Modifiers execute in order (Strikes boost first, Vortexes collect second).
 
-### Step 3: Special Symbol Execution Phase (Strikes then Vortexes)
-If modifier symbols land on the grid, they animate in strict order:
-1. **Strikes Animate First:**
-   * **Mini Strike:** Lightning strikes the 4 orthogonal neighboring cells (Up, Down, Left, Right), adding the Strike’s value to each valid coin.
-   * **Mega Strike:** Lightning shoots along all horizontal, vertical, and diagonal lines passing through the cell, adding its value to all line-sharing coins.
-   * **Ultra Strike:** A shockwave covers the entire board, boosting all valid coins on the reels.
-2. **Vortexes Animate Second:**
-   * **Mini Vortex:** Whirlpool suction pulls values from 4 orthogonal neighbors, summing them into the Vortex’s own value.
-   * **Mega Vortex:** Pulls values from all line-sharing coins, summing them into itself.
-   * **Ultra Vortex:** Pulls values from all coins on the entire grid, summing them into itself.
-   * *Note on Targets:* Original target coins **retain** their values on the board (they are copied/summed, not destroyed).
-
-### Step 4: X-Wheel Feature Phase
-If an **X Symbol** lands on the reels:
-1. The camera focuses on the **Top X-Wheels HUD**.
-2. **Wheel 1 (Mini)** spins:
-   * If it lands on `Upgrade`, an ascending beam of light activates **Wheel 2 (Mega)**, which immediately spins.
-   * If Wheel 2 lands on `Upgrade`, **Wheel 3 (Ultra)** activates and spins.
-3. Wheel awards:
-   * **Multiplier (`x2`, `x3`, `x4`, `x5`, `x10`):** An animated multiplier flashes and multiplies the cash value of all valid coins on the board.
-   * **Ultra Strike (`1`, `2`, `3`, `4`, `5`):** Distributes an instant cash boost to all valid coins across the board.
-   * **Direct Jackpot (`Mini`, `Mega`, `Ultra`):** Directly pays out the jackpot to the player's win meter.
-   * **Lock & Slingo:** Triggers the Lock & Slingo™ Bonus Game!
-
-### Step 5: Symbol Life Cycle Reset Phase
+### Step 3: Symbol Life Cycle Reset Phase
 * Any existing symbol on the reels that shares **any of the 12 Slingo lines** with a **newly landed symbol** has its lifespan **reset back to 3 Lives**!
-* *Player Experience:* Landing new coins keeps existing near-complete lines alive!
 
-### Step 6: 12 Slingo Lines Evaluation Phase
-The engine checks all 12 Slingo lines (5 Horizontal, 5 Vertical, 2 Diagonal):
-1. A line is **complete** when all 5 positions contain non-blank symbols.
-2. **Line Payout:** The player is awarded the **exact sum of all cash values** along that line ($1\text{x bet} = 100\text{ cents}$).
-3. If a symbol belongs to multiple completed lines on the same spin (e.g. crossing of a horizontal row and vertical column), its cash value is paid out for **each** completed line!
-4. Completed symbols are marked with a winning glow and will pop/clear at the start of the next spin.
+### Step 4: 12 Slingo Lines Evaluation Phase
+* Completed lines pay the sum of all cash values along the line.
+* If multiple lines complete, all line payouts are aggregated.
 
-### Step 7: Center Wild Wheel Bonus Trigger Phase
-* If **any** completed Slingo line crosses through the **Central Wild Star** at position `(2,2)` (Line 3: Center Row, Line 8: Center Column, Line 11: Main Diagonal, or Line 12: Anti-Diagonal), the **Center Wild Wheel Bonus** is triggered!
-* **Single Spin Rule:** Even if 2, 3, or 4 center-crossing lines complete simultaneously in one spin, the Center Wild Wheel Bonus is triggered **exactly once**.
+### Step 5: Center Wild Wheel Bonus Trigger Phase
+* If any completed Slingo line crosses through the **Central Wild Star** at `(2,2)`, the **Center Wild Wheel Bonus** is triggered!
 
 ---
 
 ## 5. Center Wild Wheel Bonus
 
 When activated by a center-crossing Slingo line:
-1. An ornate Bonus Wheel appears as a modal/overlay in the center of the reels.
+1. An ornate Bonus Wheel appears as an overlay in the center of the reels.
 2. The wheel spins and awards one of the following slices:
    * **Instant Cash Multipliers (`1`, `2`, `3`, `4`, `5`):** Instantly pays $1\text{x}$ to $5\text{x}$ the total bet.
    * **Mini Jackpot:** Awards fixed **5x Bet**.
@@ -154,46 +151,12 @@ When activated by a center-crossing Slingo line:
 
 ## 6. Lock & Slingo™ Bonus Game
 
-The **Lock & Slingo™ Bonus Game** is a 5×5 persistent Lock & Win feature with cascading respin mechanics.
-
-```
-+-------------------------------------------------------------+
-|                 LOCK & SLINGO™ BONUS ROUND                  |
-|          LIVES REMAINING: [ ♥ ] [ ♥ ] [ ♥ ] (3/3)           |
-+-------------------------------------------------------------+
-| SLINGO LADDER PRIZES               BONUS 5x5 BOARD          |
-| 12 Slingos: ULTRA JACKPOT (500x)   [ ] [ ] [ ] [ ] [ ]      |
-| 10 Slingos: Multiplier x2          [ ] [ ] [ ] [ ] [ ]      |
-|  9 Slingos: Ultra Strike 5x        [ ] [ ] [ ] [ ] [ ]      |
-|  8 Slingos: MEGA JACKPOT (50x)     [ ] [ ] [ ] [ ] [ ]      |
-|  7 Slingos: Ultra Strike 3x        [ ] [ ] [ ] [ ] [ ]      |
-|  6 Slingos: Ultra Strike 2x                                 |
-|  5 Slingos: Ultra Strike 1x        TOTAL BONUS WIN:         |
-|  4 Slingos: MINI JACKPOT (5x)      $0.00                    |
-+-------------------------------------------------------------+
-```
-
-### Core Rules of the Bonus:
-1. **Empty Starting Board:** The bonus begins with an empty 5×5 grid (25 empty positions).
-   * *Critical Distinction:* The **Central Wild Star does not exist** in the bonus round. Position `(2,2)` is an empty space that can be landed on.
-2. **Player Lives (3 Respins):**
-   * The player starts with **3 Lives**.
-   * **Landing Spin:** If $\ge 1$ symbol lands on the board, **lives immediately reset to 3**.
-   * **Blank Spin:** If 0 symbols land, lives decrease by 1 (`3` $\rightarrow$ `2` $\rightarrow$ `1` $\rightarrow$ `0`).
-3. **Permanent Symbol Locking (No Expiration):**
-   * Symbols in the bonus **never expire**. Once a symbol lands, it remains permanently locked on the board until the entire bonus round concludes.
-4. **Active Modifiers in Bonus:**
-   * Newly landed Strikes fire lightning and boost locked coins.
-   * Newly landed Vortexes gather locked coin values.
-   * Newly landed X Symbols spin the Bonus X-Wheels.
-5. **Bonus End Conditions:**
-   * **Out of Lives:** Player suffers 3 consecutive blank spins (Lives = 0).
-   * **Full House:** All 25 positions on the board are filled with locked symbols!
-
-### Slingo Pay Ladder & Final Payout Calculation:
-When the bonus round ends:
-1. The engine counts how many complete 5-symbol Slingo lines (0 to 12) have been formed by locked symbols.
-2. The player is awarded their **highest achieved Slingo Ladder prize**:
+The **Lock & Slingo™ Bonus Game** is a pure Hold-and-Spin feature with cascading 3-respin mechanics:
+1. **Empty Starting Board:** Starts on an empty 5×5 grid without the central star.
+2. **Permanent Locking:** All symbols that land in the bonus lock permanently (no 3-spin expiration, no coins fly to pots).
+3. **3 Respins (Lives):** Landing $\ge 1$ symbol resets lives to 3; 3 consecutive blanks end the bonus.
+4. **No Wheels / No X Symbols:** All wheels and X symbols are removed from the bonus.
+5. **Slingo Ladder Award:** When the bonus concludes, the highest achieved Slingo Ladder prize is awarded on top of all locked coin cash values!
 
 | Completed Slingos | Awarded Ladder Prize |
 | :---: | :--- |
@@ -207,9 +170,6 @@ When the bonus round ends:
 | **10 Lines** | **Multiplier x2 Boost** (Doubles all non-jackpot coins) |
 | **11 Lines** | *Skipped (Geometry rule - impossible on 5x5 grid)* |
 | **12 Lines (Full House)** | **Ultra Jackpot (500x Bet)** |
-
-3. **Total Bonus Win Awarded to Player:**
-   $$\text{Total Win} = \sum (\text{All Locked Symbol Cash Values on Grid}) + \text{Highest Slingo Ladder Prize} + \text{Direct Wheel Jackpots}$$
 
 ---
 
@@ -253,7 +213,9 @@ Jackpot Coins (`Mini`, `Mega`, `Ultra`) are **completely immune** to all game mo
 | **Coin Landing** | Impact slam with gold dust particle burst; numeric life badge appears (`3`). | Metallic coin drop / heavy clink. |
 | **Strike Trigger** | Electric arcs shoot from Strike symbol across target cells with glowing impact rings. | Crackling thunder / electric zap. |
 | **Vortex Trigger** | Swirling gravity well vortex with particle streams flowing into the portal center. | Deep whoosh / resonant vacuum pulse. |
-| **X-Wheel Upgrade** | Energy beam erupts upward from lower wheel, illuminating next wheel tier. | Ascending synthesizer chime / fanfare. |
+| **Expired Coin Pot Flight** | Expired coins lift from grid and fly in glowing arcs into top Mini, Mega, or Ultra pots. | Whooshing sparkle arc / pot coin clink. |
+| **Pot Growth / Expansion** | Targeted top wheel pot pulses, shakes, and visibly grows larger with aura. | Rising shimmer tone / resonant hum. |
+| **X-Wheel Pot Trigger** | Triggered top wheel pot bursts with golden fireworks and expands to spin. | Grand triumphal fanfare / brass swell. |
 | **Life Reset** | Glowing pulse travels along connected Slingo line; coin life counters flash back to `3`. | Magical sparkle chime. |
 | **Slingo Line Win** | Gold line tracing with glowing border; coin numbers fly into win meter. | Cash register bell / crescendo chords. |
 | **Center Wheel Trigger** | Center Wild Star explodes in golden rays; Center Wheel expands onto screen. | Dramatic brass fanfare. |
@@ -263,3 +225,4 @@ Jackpot Coins (`Mini`, `Mega`, `Ultra`) are **completely immune** to all game mo
 ---
 
 *Document generated for BoGamingRealms - Cash Vortex: Triple Power™ Simulator & Game Client Development.*
+
