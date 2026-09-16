@@ -240,9 +240,9 @@ public class CashVortexConfig
         config.XWheelPotWeights.Add(new XWheelPotWeightDef { PotId = 0, PotName = "Wheel 1 Pot", Weight = 230 });
         config.XWheelPotWeights.Add(new XWheelPotWeightDef { PotId = 1, PotName = "Wheel 2 Pot", Weight = 150 });
         config.XWheelPotWeights.Add(new XWheelPotWeightDef { PotId = 2, PotName = "Wheel 3 Pot", Weight = 20 });
-        config.XWheelTriggerBaseWeightWheel1 = 1000;
-        config.XWheelTriggerBaseWeightWheel2 = 100;
-        config.XWheelTriggerBaseWeightWheel3 = 20;
+        config.XWheelTriggerBaseWeightWheel1 = 2200;
+        config.XWheelTriggerBaseWeightWheel2 = 525;
+        config.XWheelTriggerBaseWeightWheel3 = 132;
         config.XWheelTriggerNoTriggerWeight = 100000;
 
         // Table Selections
@@ -251,9 +251,9 @@ public class CashVortexConfig
         config.TableSelections.Add(new TableSelection { TableId = 2, Description = "High Symbol Chance", Weight = 100 });
 
         // Special Symbol Chances per Table
-        config.SpecialSymbolChances.Add(new SpecialSymbolChance { TableId = 0, Description = "Low Symbol Chance", SpecialSymbolWeight = 150, NoSpecialSymbolWeight = 1000 });
-        config.SpecialSymbolChances.Add(new SpecialSymbolChance { TableId = 1, Description = "Medium Symbol Chance", SpecialSymbolWeight = 200, NoSpecialSymbolWeight = 1000 });
-        config.SpecialSymbolChances.Add(new SpecialSymbolChance { TableId = 2, Description = "High Symbol Chance", SpecialSymbolWeight = 250, NoSpecialSymbolWeight = 1000 });
+        config.SpecialSymbolChances.Add(new SpecialSymbolChance { TableId = 0, Description = "Low Symbol Chance", SpecialSymbolWeight = 158, NoSpecialSymbolWeight = 1000 });
+        config.SpecialSymbolChances.Add(new SpecialSymbolChance { TableId = 1, Description = "Medium Symbol Chance", SpecialSymbolWeight = 208, NoSpecialSymbolWeight = 1000 });
+        config.SpecialSymbolChances.Add(new SpecialSymbolChance { TableId = 2, Description = "High Symbol Chance", SpecialSymbolWeight = 258, NoSpecialSymbolWeight = 1000 });
 
         // Special Symbol Types (No X Symbol)
         config.SpecialSymbolDefs.Add(new SpecialSymbolDef { SymbolId = 0, SymbolName = "Jackpot Coin", Weight = 500 });
@@ -278,9 +278,9 @@ public class CashVortexConfig
         }
 
         // Cash Coin Landing Chances per Table
-        config.CashCoinChances.Add(new CashCoinChance { TableId = 0, Description = "Low Symbol Chance", CoinWeight = 70, BlankWeight = 1000 });
-        config.CashCoinChances.Add(new CashCoinChance { TableId = 1, Description = "Medium Symbol Chance", CoinWeight = 156, BlankWeight = 1000 });
-        config.CashCoinChances.Add(new CashCoinChance { TableId = 2, Description = "High Symbol Chance", CoinWeight = 295, BlankWeight = 1000 });
+        config.CashCoinChances.Add(new CashCoinChance { TableId = 0, Description = "Low Symbol Chance", CoinWeight = 69, BlankWeight = 1000 });
+        config.CashCoinChances.Add(new CashCoinChance { TableId = 1, Description = "Medium Symbol Chance", CoinWeight = 153, BlankWeight = 1000 });
+        config.CashCoinChances.Add(new CashCoinChance { TableId = 2, Description = "High Symbol Chance", CoinWeight = 290, BlankWeight = 1000 });
 
         // Cash Coin Values
         double[] coinVals = { 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0 };
@@ -300,35 +300,35 @@ public class CashVortexConfig
 
         // Reel-Top X Wheels (9 slices for Mini, 9 slices for Mega, 10 slices for Ultra — No Upgrades)
         config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(0, "x2", 500));
-        config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(1, "5", 150));
+        config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(1, "5", 210));
         config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(2, "1", 1200));
         config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(3, "x3", 300));
-        config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(4, "Mini Jackpot", 320));
-        config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(5, "3", 400));
+        config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(4, "Mini Jackpot", 460));
+        config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(5, "3", 500));
         config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(6, "x2", 500));
         config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(7, "2", 900));
-        config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(8, "4", 250));
+        config.MiniWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(8, "4", 350));
 
         config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(0, "x4", 300));
-        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(1, "Lock & Slingo", 250));
+        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(1, "Lock & Slingo", 300));
         config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(2, "2", 500));
-        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(3, "x5", 200));
-        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(4, "Mini Jackpot", 300));
+        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(3, "x5", 250));
+        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(4, "Mini Jackpot", 350));
         config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(5, "3", 400));
         config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(6, "x3", 400));
-        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(7, "Mega Jackpot", 40));
-        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(8, "4", 200));
+        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(7, "Mega Jackpot", 65));
+        config.MegaWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(8, "4", 300));
 
         config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(0, "x5", 300));
         config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(1, "Mini Jackpot", 200));
-        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(2, "x10", 150));
-        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(3, "Mega Jackpot", 50));
+        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(2, "x10", 200));
+        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(3, "Mega Jackpot", 80));
         config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(4, "x5", 300));
-        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(5, "Lock & Slingo", 300));
-        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(6, "x10", 150));
-        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(7, "Ultra Jackpot", 5));
+        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(5, "Lock & Slingo", 350));
+        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(6, "x10", 200));
+        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(7, "Ultra Jackpot", 12));
         config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(8, "x5", 300));
-        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(9, "Lock & Slingo", 300));
+        config.UltraWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(9, "Lock & Slingo", 350));
 
         // Center Wild Wheel Bonus (Exact same prizes, calibrated weights)
         config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(0, "1", 3350));
@@ -336,19 +336,19 @@ public class CashVortexConfig
         config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(2, "3", 1400));
         config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(3, "4", 700));
         config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(4, "5", 350));
-        config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(5, "Mini Jackpot", 650));
-        config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(6, "Mega Jackpot", 32));
+        config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(5, "Mini Jackpot", 685));
+        config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(6, "Mega Jackpot", 34));
         config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(7, "Ultra Jackpot", 1));
-        config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(8, "Lock&Slingo", 1350));
+        config.CenterWheelPrizes.Add(CashVortexExcelLoader.ParsePrizeDef(8, "Lock&Slingo", 1360));
 
         // Lock & Slingo Bonus Config
         config.BonusBaseFactor = 400;
         int[,] landingWeights = new int[4, 5]
         {
             { 0, 0, 0, 0, 0 },
-            { 290, 250, 200, 140, 60 }, // Life 1
-            { 330, 290, 240, 170, 85 }, // Life 2
-            { 370, 330, 270, 200, 110 } // Life 3
+            { 289, 249, 199, 139, 60 }, // Life 1
+            { 329, 289, 239, 169, 85 }, // Life 2
+            { 369, 329, 269, 199, 109 } // Life 3
         };
         for (int l = 0; l <= 3; l++)
         {
@@ -371,8 +371,8 @@ public class CashVortexConfig
         config.SlingoLadderPrizes.Add(new SlingoLadderPrizeDef { SlingoCount = 12, PrizeString = "Ultra Jackpot", Type = WheelPrizeType.Jackpot, JackpotType = "Ultra" });
 
         config.BonusCashStrikeTypes.Add(new SpecialSymbolDef { SymbolName = "Mini Strike", Weight = 1000 });
-        config.BonusCashStrikeTypes.Add(new SpecialSymbolDef { SymbolName = "Mega Strike", Weight = 300 });
-        config.BonusCashStrikeTypes.Add(new SpecialSymbolDef { SymbolName = "Ultra Strike", Weight = 50 });
+        config.BonusCashStrikeTypes.Add(new SpecialSymbolDef { SymbolName = "Mega Strike", Weight = 320 });
+        config.BonusCashStrikeTypes.Add(new SpecialSymbolDef { SymbolName = "Ultra Strike", Weight = 60 });
 
         config.BonusOutcomeDefs.Add(new BonusOutcomeDef
         {
@@ -385,14 +385,14 @@ public class CashVortexConfig
         {
             OutcomeId = 1,
             Description = "2 Cash Coins",
-            WeightsBySpaceBucket = new[] { 400, 300, 200, 100, 0 },
+            WeightsBySpaceBucket = new[] { 400, 300, 200, 100, 20 },
             Items = new List<BonusOutcomeItem> { new() { Type = SymbolType.CashCoin, Count = 2 } }
         });
         config.BonusOutcomeDefs.Add(new BonusOutcomeDef
         {
             OutcomeId = 2,
             Description = "3 Cash Coins",
-            WeightsBySpaceBucket = new[] { 200, 100, 50, 1, 0 },
+            WeightsBySpaceBucket = new[] { 200, 100, 48, 5, 0 },
             Items = new List<BonusOutcomeItem> { new() { Type = SymbolType.CashCoin, Count = 3 } }
         });
         config.BonusOutcomeDefs.Add(new BonusOutcomeDef
@@ -406,7 +406,7 @@ public class CashVortexConfig
         {
             OutcomeId = 4,
             Description = "1 Cash Coin + 1 Jackpot Coin",
-            WeightsBySpaceBucket = new[] { 10, 5, 3, 1, 0 },
+            WeightsBySpaceBucket = new[] { 11, 5, 3, 1, 0 },
             Items = new List<BonusOutcomeItem> { new() { Type = SymbolType.CashCoin, Count = 1 }, new() { Type = SymbolType.JackpotCoin, Count = 1 } }
         });
         config.BonusOutcomeDefs.Add(new BonusOutcomeDef
@@ -461,7 +461,7 @@ public class CashVortexConfig
 
         // Bonus Jackpot Coins
         config.BonusJackpotCoins.Add(new JackpotCoinDef { JackpotId = 0, JackpotName = "Mini", Multiplier = 5.0, Weight = 1000 });
-        config.BonusJackpotCoins.Add(new JackpotCoinDef { JackpotId = 1, JackpotName = "Mega", Multiplier = 50.0, Weight = 40 });
+        config.BonusJackpotCoins.Add(new JackpotCoinDef { JackpotId = 1, JackpotName = "Mega", Multiplier = 50.0, Weight = 38 });
         config.BonusJackpotCoins.Add(new JackpotCoinDef { JackpotId = 2, JackpotName = "Ultra", Multiplier = 500.0, Weight = 2 });
 
         // Bonus Cash Strike Values
