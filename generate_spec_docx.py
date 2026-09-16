@@ -66,7 +66,7 @@ def create_game_spec_docx(output_path):
         ("Target Platforms", "Mobile (iOS/Android), Tablet & Desktop (HTML5 / WebGL)"),
         ("Reel Layout", "5×5 Matrix (25 Reel Positions) with Central Wild Star at (2,2)"),
         ("Paylines & Mechanics", "12 Slingo Lines, 3-Spin Coin Lifespans, 3-Pot Expired Coins Engine"),
-        ("Key Features", "3-Pot X-Wheels (No X Symbol), Center Wild Wheel Bonus, 5×5 Lock & Slingo™ Bonus")
+        ("Key Features", "3-Pot Top Wheels, Center Wild Wheel Bonus, 5×5 Lock & Slingo™ Bonus")
     ]
     for i, (k, v) in enumerate(meta_data):
         row = meta_table.rows[i]
@@ -99,15 +99,15 @@ def create_game_spec_docx(output_path):
         h = doc.add_paragraph()
         run = h.add_run(text)
         run.font.name = 'Arial'
-        run.font.size = Pt(12)
+        run.font.size = Pt(11.5)
         run.font.bold = True
         run.font.color.rgb = RGBColor(0x00, 0x79, 0x6B) # Teal
         h.paragraph_format.space_before = Pt(12)
         h.paragraph_format.space_after = Pt(4)
         return h
 
-    # Section 0: Document Revision History & Changelog
-    add_heading_1("Document Revision History & Changelog")
+    # Section 0: Document Revision History
+    add_heading_1("Document Revision History")
     rev_table = doc.add_table(rows=1, cols=4)
     rev_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     r_hdr = rev_table.rows[0]
@@ -123,29 +123,13 @@ def create_game_spec_docx(output_path):
 
     rev_data = [
         ("v3.0", "Sep 2026", 
-         "3-Pot Dynamic Expired Coins Overhaul & X Symbol Removal:\n"
-         "• X Symbol Removed: Completely eliminated X symbol from base game and bonus reels.\n"
-         "• 3-Pot Expired Coins Engine: At spin start, expired coins fly to 3 top wheel pots (Mini, Mega, Ultra), expanding them visually.\n"
-         "• Dynamic Trigger Formula: Single random roll determines if a pot triggers a wheel bonus (at most 1 per spin).\n"
-         "• Independent X-Wheels: Standalone prize wheels; all Upgrade slices removed.\n"
-         "• Lock & Slingo™ Streamlined: Removed X-Wheels and coin flight from bonus (pure Hold & Spin respin round).\n"
-         "• Landing Weight Refinement: Set weight of 2 Cash Coins to 0 for <=5 spaces left to prevent placement overflow.\n"
-         "• 95.50% Rebalance: Full mathematical calibration maintaining target RTP of 95.50% ±0.25%.", 
+         "Added 3-Pot Top Wheel trigger system powered by flying expired coins, redesigned top wheels as independent prize wheels, streamlined Lock & Slingo™ bonus, and recalibrated math to 95.50% RTP.", 
          "Math & Game Design"),
         ("v2.0", "Aug 2026", 
-         "Slingo Ladder & Center Wheel Integration:\n"
-         "• Lock & Slingo™ Ladder: Added full 12-rank Slingo Ladder prize achievements awarded at bonus conclusion.\n"
-         "• Center Wild Wheel Bonus: Introduced center wheel triggered by completed Slingo lines passing through Central Wild Star at (2,2).\n"
-         "• Jackpot Isolation Rule: Formulated strict immunity of Mini/Mega/Ultra Jackpots against all modifier boosts, collections, and multipliers.\n"
-         "• Live Config Sync: Connected dynamic Google Drive configuration loader for simulation and runtime tuning.", 
+         "Added full 12-rank Slingo Ladder prize achievements to Lock & Slingo™, added Center Wild Wheel Bonus, and formalized Jackpot isolation rules.", 
          "Math & Engineering"),
         ("v1.0", "Jun 2026", 
-         "Initial Game Architecture:\n"
-         "• 5×5 Grid Matrix with 12 Slingo Paylines (5 Horizontal, 5 Vertical, 2 Diagonal).\n"
-         "• Persistent 3-Spin Coin Lifespan mechanic and line-sharing life reset.\n"
-         "• 3 Tiers of Modifiers: Mini, Mega, and Ultra Cash Strikes & Cash Vortexes.\n"
-         "• On-reel X-Symbol landing triggering 3-tiered X-Wheels with slice upgrade advancement.\n"
-         "• 5×5 Lock & Win Respin Bonus Game.", 
+         "Initial game specification featuring 5×5 matrix, 12 Slingo paylines, 3-spin persistent coin lifespans, Cash Strikes, and Cash Vortexes.", 
          "Game Design")
     ]
     for row_idx, data in enumerate(rev_data):
@@ -166,7 +150,7 @@ def create_game_spec_docx(output_path):
     add_heading_1("1. Executive Summary & High Concept")
     p1 = doc.add_paragraph(
         "Cash Vortex: Triple Power™ combines the excitement of Slingo line completion with persistent locking cash symbols, "
-        "explosive modifier mechanics (Strikes and Vortexes), an innovative 3-Pot Dynamic X-Wheel Bonus System driven by flying expired coins, "
+        "explosive modifier mechanics (Strikes and Vortexes), an innovative 3-Pot Top Wheel Bonus System driven by flying expired coins, "
         "an independent center-reel wheel bonus, and a dedicated 5×5 Lock & Slingo™ respin bonus feature."
     )
     p1.paragraph_format.space_after = Pt(6)
@@ -178,20 +162,20 @@ def create_game_spec_docx(output_path):
     p2.paragraph_format.space_after = Pt(6)
     p3 = doc.add_paragraph(
         "At the start of each spin, all expired coins (both un-won coins whose 3-spin lifespan has concluded and coins that won on the previous spin) "
-        "fly up to the 3 X-Wheel Pots (Mini, Mega, and Ultra) above the reels. Each expired coin contributes to a pot, visually expanding it and dynamically "
-        "increasing the probability of triggering that specific wheel bonus!"
+        "fly up to the 3 Top Wheel Pots (Mini, Mega, and Ultra) above the reels. Each expired coin contributes to a pot, visually expanding it and dynamically "
+        "increasing the probability of triggering that specific wheel bonus."
     )
     p3.paragraph_format.space_after = Pt(12)
 
     # Section 2
-    add_heading_1("2. Screen Layout, UI & Visual Hierarchy")
+    add_heading_1("2. Screen Layout & Visual Hierarchy")
     doc.add_paragraph(
         "The game interface is structured into three primary visual zones:"
     )
     ui_points = [
-        ("Top-of-Reels 3-Pot X-Wheels HUD: ", "Displays the 3 interactive wheel pots: Pot 1 (Mini Wheel), Pot 2 (Mega Wheel), and Pot 3 (Ultra Wheel). Expired coins visibly fly into these pots and pulse them."),
+        ("Top-of-Reels 3-Pot Wheels HUD: ", "Displays the 3 interactive wheel pots: Pot 1 (Mini Wheel Pot), Pot 2 (Mega Wheel Pot), and Pot 3 (Ultra Wheel Pot). Expired coins visibly fly into these pots and pulse them."),
         ("5×5 Main Grid Matrix: ", "Contains 25 cell positions indexed from (0,0) at top-left to (4,4) at bottom-right. The central position (2,2) is permanently occupied by the Central Wild Star in the base game."),
-        ("Symbol Life Indicators: ", "Every active coin on the reels features an animated visual life badge (countdown: 3 -> 2 -> 1 -> Pop / Fly to Pots)."),
+        ("Symbol Life Indicators: ", "Every active coin on the reels features an animated visual life badge (countdown: 3 -> 2 -> 1 -> Fly to Pot)."),
         ("Slingo Payline Overlays: ", "12 predefined winning lines (5 Horizontal Rows, 5 Vertical Columns, and 2 Diagonals).")
     ]
     for bold_txt, norm_txt in ui_points:
@@ -240,19 +224,13 @@ def create_game_spec_docx(output_path):
             set_cell_background(cell, bg_col)
             set_cell_margins(cell, 60, 60, 80, 80)
 
-    p_note = doc.add_paragraph()
-    p_note.paragraph_format.space_before = Pt(6)
-    p_note_run = p_note.add_run("Important Note: ")
-    p_note_run.font.bold = True
-    p_note.add_run("The X Symbol has been completely removed from this game. All wheel bonus triggering is driven exclusively by the 3-pot flying expired coins engine.")
-
     # Section 4
     add_heading_1("4. Base Game Mechanics & Execution Sequence")
     doc.add_paragraph(
         "When the player presses the SPIN button, frontend animations and client state transitions MUST execute in the following exact chronological sequence:"
     )
     steps = [
-        ("Step 1: Expired Coins Pot Flight & Dynamic Trigger Phase",
+        ("4.1 Step 1: Expired Coins Pot Flight & Dynamic Trigger Phase",
          "1. Identify Expired Coins: Coins that won on the previous spin or reached the end of their 3-spin lifespan (LifeRemaining <= 1) expire.\n"
          "2. Pot Destination Sampling: Each expired coin independently samples which top pot it flies to (Pot 1 Mini, Pot 2 Mega, Pot 3 Ultra).\n"
          "3. Visual Pot Flight: Expired coins lift from the grid and fly in glowing arcs into their respective pots, causing the pots to expand/pulse.\n"
@@ -263,23 +241,23 @@ def create_game_spec_docx(output_path):
          "   - Weight No-Trigger = 100000\n"
          "   A single random roll against Total Weight determines if Pot 1, Pot 2, Pot 3, or No Wheel triggers (at most one wheel triggers per spin).\n"
          "5. Grid Cleanup: Expired coins disappear; surviving coins have their life counter decremented by 1 (3 -> 2, or 2 -> 1)."),
-        ("Step 2: Symbol Landing & Wheel Execution Phase",
+        ("4.2 Step 2: Symbol Landing & Wheel Execution Phase",
          "Case A (Wheel Bonus Triggered):\n"
-         "  1. Special symbol selection is bypassed (no special symbols land on this spin).\n"
+         "  1. Special symbol selection is bypassed.\n"
          "  2. Empty grid positions fill with Cash Coins and Blanks according to the active table.\n"
          "  3. The triggered wheel (Mini, Mega, or Ultra) immediately spins and awards its prize (Multipliers, Ultra Strikes, Jackpots, or Lock & Slingo).\n"
          "Case B (No Wheel Bonus Triggered):\n"
          "  1. Special symbol selection executes normally (pool includes Jackpot Coins, Strikes, Vortexes).\n"
          "  2. Empty grid positions fill with Cash Coins and Blanks.\n"
          "  3. Modifiers execute in order (Strikes fire lightning boosts first, Vortexes collect values second)."),
-        ("Step 3: Symbol Life Cycle Reset Phase",
+        ("4.3 Step 3: Symbol Life Cycle Reset Phase",
          "Any existing symbol on the reels sharing any Slingo line with any newly landed symbol has its lifespan reset back to 3 Lives!"),
-        ("Step 4: 12 Slingo Lines Evaluation Phase",
+        ("4.4 Step 4: 12 Slingo Lines Evaluation Phase",
          "1. A line completes when all 5 positions contain non-blank symbols.\n"
          "2. Line Payout: Player receives the sum of all cash values along that line.\n"
          "3. Intersection Rule: Coins belonging to multiple winning lines pay out for each completed line.\n"
          "4. Winning coins are highlighted and marked to fly to pots at the start of next spin."),
-        ("Step 5: Center Wild Wheel Bonus Trigger Phase",
+        ("4.5 Step 5: Center Wild Wheel Bonus Trigger Phase",
          "If any completed Slingo line crosses through the Central Wild Star at (2,2) (Center Row, Center Column, Main Diagonal, or Anti-Diagonal), the Center Wild Wheel Bonus is triggered once.")
     ]
     for step_title, step_body in steps:
@@ -295,9 +273,9 @@ def create_game_spec_docx(output_path):
     )
     wheel_slices = [
         ("Instant Cash Multipliers (1x, 2x, 3x, 4x, 5x): ", "Directly pays 1x to 5x player's total bet."),
-        ("Mini Jackpot: ", "Awards 5x total bet."),
-        ("Mega Jackpot: ", "Awards 50x total bet."),
-        ("Ultra Jackpot: ", "Awards 500x total bet."),
+        ("Mini Jackpot: ", "Awards fixed 5x total bet."),
+        ("Mega Jackpot: ", "Awards fixed 50x total bet."),
+        ("Ultra Jackpot: ", "Awards fixed 500x total bet."),
         ("Lock & Slingo: ", "Launches the 5×5 Lock & Slingo™ Bonus Game!")
     ]
     for bold_txt, norm_txt in wheel_slices:
@@ -308,9 +286,9 @@ def create_game_spec_docx(output_path):
         p.paragraph_format.space_after = Pt(3)
 
     # Section 6
-    add_heading_1("6. Reel-Top X-Wheels (Independent Bonus Wheels)")
+    add_heading_1("6. Reel-Top Wheel Bonuses")
     doc.add_paragraph(
-        "Each of the 3 top wheels operates as an independent bonus wheel awarded directly from its respective pot (no upgrade slices):"
+        "Each of the 3 top wheels operates as an independent bonus wheel awarded directly from its respective pot:"
     )
     xwheel_points = [
         ("Mini Wheel (Wheel 1 - 9 Slices): ", "Contains x2, 5, 1, x3, Mini Jackpot (5x), 3, x2, 2, 4. Multipliers apply to all grid coins; fixed numbers add to all grid coins."),
@@ -332,8 +310,8 @@ def create_game_spec_docx(output_path):
     bonus_rules = [
         ("25 Empty Starting Spaces: ", "The bonus begins with an empty 5×5 board. The Central Wild Star does NOT exist in the bonus round (position (2,2) is a standard empty space)."),
         ("Player Lives (3 Respins): ", "Player begins with 3 Lives. If >=1 symbol lands on a spin, lives reset to 3. A blank spin decrements lives by 1."),
-        ("Permanent Symbol Locking: ", "Symbols in the bonus never expire. All landed coins remain permanently locked until the bonus ends (no coins fly to pots)."),
-        ("No Wheels / No X Symbols: ", "All wheels and X symbols are removed from the bonus round."),
+        ("Permanent Symbol Locking: ", "Symbols in the bonus never expire. All landed coins remain permanently locked until the bonus ends."),
+        ("Pure Respin Focus: ", "The bonus round is focused entirely on the 5×5 grid hold-and-spin mechanic without top wheel triggers."),
         ("Active In-Bonus Modifiers: ", "Strikes boost locked coins, and Vortexes gather locked coins according to their standard area of effect."),
         ("Bonus End Conditions: ", "Ends on 3 consecutive blanks (Lives = 0) OR Full House (all 25 positions filled with locked coins).")
     ]
@@ -402,7 +380,9 @@ def create_game_spec_docx(output_path):
         ("D. Multi-Line Coin Stacking: ",
          "Coins belonging to intersecting winning lines pay out for each line they belong to."),
         ("E. Single Center Trigger: ",
-         "Multiple center-crossing lines on a single spin activate the Center Wild Wheel Bonus exactly once.")
+         "Multiple center-crossing lines on a single spin activate the Center Wild Wheel Bonus exactly once."),
+        ("F. Full House in Bonus Game: ",
+         "Filling all 25 spaces immediately triggers the Full House celebration, awarding the Ultra Jackpot (500x) ladder prize plus the sum of all 25 locked coins.")
     ]
     for bold_txt, norm_txt in edge_cases:
         p = doc.add_paragraph(style='List Bullet')
@@ -432,7 +412,7 @@ def create_game_spec_docx(output_path):
         ("Vortex Trigger", "Swirling gravity well vortex with particle streams flowing into the portal center.", "Deep whoosh / resonant vacuum pulse."),
         ("Expired Coin Pot Flight", "Expired coins lift from grid and fly in glowing arcs into top Mini, Mega, or Ultra pots.", "Whooshing sparkle arc / pot coin clink."),
         ("Pot Growth / Expansion", "Targeted top wheel pot pulses, shakes, and visibly grows larger with aura.", "Rising shimmer tone / resonant hum."),
-        ("X-Wheel Pot Trigger", "Triggered top wheel pot bursts with golden fireworks and expands to spin.", "Grand triumphal fanfare / brass swell."),
+        ("Top Wheel Pot Trigger", "Triggered top wheel pot bursts with golden fireworks and expands to spin.", "Grand triumphal fanfare / brass swell."),
         ("Life Reset", "Glowing pulse travels along connected Slingo line; coin life counters flash back to 3.", "Magical sparkle chime."),
         ("Slingo Line Win", "Gold line tracing with glowing border; coin numbers fly into win meter.", "Cash register bell / crescendo chords."),
         ("Center Wheel Trigger", "Center Wild Star explodes in golden rays; Center Wheel expands onto screen.", "Dramatic brass fanfare."),
