@@ -53,7 +53,7 @@ def create_game_spec_docx(output_path):
     
     # Subtitle
     sub_p = doc.add_paragraph()
-    sub_run = sub_p.add_run("Game Specification for Frontend Developers, Game Designers & QA | Version 3.0 (3-Pot Expired Coins Engine)")
+    sub_run = sub_p.add_run("Game Specification for Frontend Developers, Game Designers & QA | Version 3.0")
     sub_run.font.size = Pt(10.5)
     sub_run.font.italic = True
     sub_run.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
@@ -105,6 +105,62 @@ def create_game_spec_docx(output_path):
         h.paragraph_format.space_before = Pt(12)
         h.paragraph_format.space_after = Pt(4)
         return h
+
+    # Section 0: Document Revision History & Changelog
+    add_heading_1("Document Revision History & Changelog")
+    rev_table = doc.add_table(rows=1, cols=4)
+    rev_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    r_hdr = rev_table.rows[0]
+    r_hdr_titles = ["Version", "Date", "Summary of Changes", "Author / Team"]
+    for idx, text in enumerate(r_hdr_titles):
+        cell = r_hdr.cells[idx]
+        cell.text = text
+        cell.paragraphs[0].runs[0].font.bold = True
+        cell.paragraphs[0].runs[0].font.size = Pt(9)
+        cell.paragraphs[0].runs[0].font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        set_cell_background(cell, "1A237E")
+        set_cell_margins(cell, 80, 80, 100, 100)
+
+    rev_data = [
+        ("v3.0", "Sep 2026", 
+         "3-Pot Dynamic Expired Coins Overhaul & X Symbol Removal:\n"
+         "• X Symbol Removed: Completely eliminated X symbol from base game and bonus reels.\n"
+         "• 3-Pot Expired Coins Engine: At spin start, expired coins fly to 3 top wheel pots (Mini, Mega, Ultra), expanding them visually.\n"
+         "• Dynamic Trigger Formula: Single random roll determines if a pot triggers a wheel bonus (at most 1 per spin).\n"
+         "• Independent X-Wheels: Standalone prize wheels; all Upgrade slices removed.\n"
+         "• Lock & Slingo™ Streamlined: Removed X-Wheels and coin flight from bonus (pure Hold & Spin respin round).\n"
+         "• Landing Weight Refinement: Set weight of 2 Cash Coins to 0 for <=5 spaces left to prevent placement overflow.\n"
+         "• 95.50% Rebalance: Full mathematical calibration maintaining target RTP of 95.50% ±0.25%.", 
+         "Math & Game Design"),
+        ("v2.0", "Aug 2026", 
+         "Slingo Ladder & Center Wheel Integration:\n"
+         "• Lock & Slingo™ Ladder: Added full 12-rank Slingo Ladder prize achievements awarded at bonus conclusion.\n"
+         "• Center Wild Wheel Bonus: Introduced center wheel triggered by completed Slingo lines passing through Central Wild Star at (2,2).\n"
+         "• Jackpot Isolation Rule: Formulated strict immunity of Mini/Mega/Ultra Jackpots against all modifier boosts, collections, and multipliers.\n"
+         "• Live Config Sync: Connected dynamic Google Drive configuration loader for simulation and runtime tuning.", 
+         "Math & Engineering"),
+        ("v1.0", "Jun 2026", 
+         "Initial Game Architecture:\n"
+         "• 5×5 Grid Matrix with 12 Slingo Paylines (5 Horizontal, 5 Vertical, 2 Diagonal).\n"
+         "• Persistent 3-Spin Coin Lifespan mechanic and line-sharing life reset.\n"
+         "• 3 Tiers of Modifiers: Mini, Mega, and Ultra Cash Strikes & Cash Vortexes.\n"
+         "• On-reel X-Symbol landing triggering 3-tiered X-Wheels with slice upgrade advancement.\n"
+         "• 5×5 Lock & Win Respin Bonus Game.", 
+         "Game Design")
+    ]
+    for row_idx, data in enumerate(rev_data):
+        row = rev_table.add_row()
+        bg_col = "FFFFFF" if row_idx % 2 == 0 else "F9F9F9"
+        for col_idx, txt in enumerate(data):
+            cell = row.cells[col_idx]
+            cell.text = txt
+            cell.paragraphs[0].runs[0].font.size = Pt(8.5)
+            if col_idx == 0:
+                cell.paragraphs[0].runs[0].font.bold = True
+            set_cell_background(cell, bg_col)
+            set_cell_margins(cell, 60, 60, 80, 80)
+
+    doc.add_paragraph().paragraph_format.space_after = Pt(10)
 
     # Section 1
     add_heading_1("1. Executive Summary & High Concept")
@@ -400,5 +456,5 @@ def create_game_spec_docx(output_path):
     print(f"Successfully generated Google Docs / Word specification at: {output_path}")
 
 if __name__ == "__main__":
-    output_docx = "/Users/bo.wang/Downloads/Cash_Vortex_Triple_Power_Game_Spec.docx"
+    output_docx = "/Users/bo.wang/Downloads/Cash_Vortex_Triple_Power_Game_Spec_V3.0.docx"
     create_game_spec_docx(output_docx)

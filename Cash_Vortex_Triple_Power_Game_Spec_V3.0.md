@@ -8,6 +8,16 @@
 
 ---
 
+## Document Revision History & Changelog
+
+| Version | Date | Key Changes & Summary | Author / Team |
+| :---: | :---: | :--- | :--- |
+| **v3.0** | Sep 2026 | **3-Pot Dynamic Expired Coins Overhaul & X Symbol Removal:**<br>• **X Symbol Removed:** Completely eliminated the X symbol from base game and bonus reels.<br>• **3-Pot Expired Coins Engine:** At the start of each spin, expired coins (lifespan end or previous-spin line wins) fly to 3 top wheel pots (Mini, Mega, Ultra), expanding them visually.<br>• **Dynamic Trigger Formula:** Single random roll determines if a pot triggers a wheel bonus (at most 1 per spin).<br>• **Independent X-Wheels:** Slices upgraded to direct standalone prizes; all `Upgrade` slices removed.<br>• **Lock & Slingo™ Streamlined:** Removed X-Wheels and coin flight from the bonus (pure Hold & Spin respin round).<br>• **Landing Logic Refinement:** Set weight of 2 Cash Coins to `0` for $\le 5$ spaces left to prevent placement overflow.<br>• **95.50% Rebalance:** Full mathematical calibration maintaining target RTP of 95.50% ±0.25%. | Math & Game Design |
+| **v2.0** | Aug 2026 | **Slingo Ladder & Center Wheel Integration:**<br>• **Lock & Slingo™ Ladder:** Added full 12-rank Slingo Ladder prize achievements awarded at bonus conclusion.<br>• **Center Wild Wheel Bonus:** Introduced center wheel triggered by completed Slingo lines passing through the Central Wild Star at `(2,2)`.<br>• **Jackpot Isolation Rule:** Formulated strict immunity of Mini/Mega/Ultra Jackpot coins against all modifier boosts, collections, and multipliers.<br>• **Live Config Sync:** Connected dynamic Google Drive configuration loader for simulation and runtime tuning. | Math & Engineering |
+| **v1.0** | Jun 2026 | **Initial Game Architecture:**<br>• 5×5 Grid Matrix with 12 Slingo Paylines (5 Horizontal, 5 Vertical, 2 Diagonal).<br>• Persistent 3-Spin Coin Lifespan mechanic and line-sharing life reset.<br>• 3 Tiers of Modifiers: Mini, Mega, and Ultra Cash Strikes & Cash Vortexes.<br>• On-reel X-Symbol landing triggering 3-tiered X-Wheels with slice upgrade advancement.<br>• 5×5 Lock & Win Respin Bonus Game. | Game Design |
+
+---
+
 ## 1. Executive Summary & High Concept
 
 **Cash Vortex: Triple Power™** combines the thrill of Slingo line completion with persistent locking cash symbols, explosive modifier mechanics (Strikes and Vortexes), a **3-Pot X-Wheel Bonus System** powered by flying expired coins, an independent center-reel wheel bonus, and a dedicated 5×5 **Lock & Slingo™** respin bonus feature.
@@ -64,7 +74,7 @@ At the start of each spin, all expired coins (both un-won coins whose 3-spin lif
 | **Mega Vortex** | Purple Swirling Portal | Starts at `2.0x` | On landing, **gathers and sums** cash values of **all symbols sharing any Slingo line** into itself. |
 | **Ultra Vortex** | Gold Swirling Portal | Starts at `5.0x` | On landing, **gathers and sums** cash values of **all valuable symbols across the entire grid** into itself. |
 
-*(Note: There is no X symbol in this game. All wheel triggering is driven by the 3-pot expired coins system).*
+*(Note: There is no X symbol in this game. All wheel triggering is driven exclusively by the 3-pot expired coins system).*
 
 ---
 
@@ -149,7 +159,16 @@ When activated by a center-crossing Slingo line:
 
 ---
 
-## 6. Lock & Slingo™ Bonus Game
+## 6. Reel-Top X-Wheels (Independent Bonus Wheels)
+
+Each of the 3 top wheels operates as an independent bonus wheel awarded directly from its respective pot (no upgrade slices):
+* **Mini Wheel (Wheel 1 - 9 Slices):** Contains `x2`, `5`, `1`, `x3`, `Mini Jackpot (5x)`, `3`, `x2`, `2`, `4`.
+* **Mega Wheel (Wheel 2 - 9 Slices):** Contains `x4`, `Lock & Slingo`, `2`, `x5`, `Mini Jackpot (5x)`, `3`, `x3`, `Mega Jackpot (50x)`, `4`.
+* **Ultra Wheel (Wheel 3 - 10 Slices):** Contains `x5`, `Mini Jackpot (5x)`, `x10`, `Mega Jackpot (50x)`, `x5`, `Lock & Slingo`, `x10`, `Ultra Jackpot (500x)`, `x5`, `Lock & Slingo`.
+
+---
+
+## 7. Lock & Slingo™ Bonus Game
 
 The **Lock & Slingo™ Bonus Game** is a pure Hold-and-Spin feature with cascading 3-respin mechanics:
 1. **Empty Starting Board:** Starts on an empty 5×5 grid without the central star.
@@ -176,7 +195,7 @@ The **Lock & Slingo™ Bonus Game** is a pure Hold-and-Spin feature with cascadi
 
 ---
 
-## 7. Critical Isolation Rules & Edge Cases
+## 8. Critical Isolation Rules & Edge Cases
 
 ### A. The Jackpot Isolation Rule (CRITICAL)
 Jackpot Coins (`Mini`, `Mega`, `Ultra`) are **completely immune** to all game modifiers:
@@ -209,7 +228,7 @@ Jackpot Coins (`Mini`, `Mega`, `Ultra`) are **completely immune** to all game mo
 
 ---
 
-## 8. Frontend Animation & Audio Choreography
+## 9. Frontend Animation & Audio Choreography
 
 | Game Event | Visual VFX / Animation | Sound Effect (SFX) |
 | :--- | :--- | :--- |
@@ -228,4 +247,3 @@ Jackpot Coins (`Mini`, `Mega`, `Ultra`) are **completely immune** to all game mo
 ---
 
 *Document generated for BoGamingRealms - Cash Vortex: Triple Power™ Simulator & Game Client Development.*
-
