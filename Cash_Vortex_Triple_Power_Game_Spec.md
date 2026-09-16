@@ -158,18 +158,21 @@ The **Lock & Slingo™ Bonus Game** is a pure Hold-and-Spin feature with cascadi
 4. **No Wheels / No X Symbols:** All wheels and X symbols are removed from the bonus.
 5. **Slingo Ladder Award:** When the bonus concludes, the highest achieved Slingo Ladder prize is awarded on top of all locked coin cash values!
 
-| Completed Slingos | Awarded Ladder Prize |
-| :---: | :--- |
-| **0 – 3 Lines** | No ladder prize |
-| **4 Lines** | **Mini Jackpot (5x Bet)** |
-| **5 Lines** | **Ultra Strike +1x Boost** (Adds +1x to all non-jackpot coins) |
-| **6 Lines** | **Ultra Strike +2x Boost** (Adds +2x to all non-jackpot coins) |
-| **7 Lines** | **Ultra Strike +3x Boost** (Adds +3x to all non-jackpot coins) |
-| **8 Lines** | **Mega Jackpot (50x Bet)** |
-| **9 Lines** | **Ultra Strike +5x Boost** (Adds +5x to all non-jackpot coins) |
-| **10 Lines** | **Multiplier x2 Boost** (Doubles all non-jackpot coins) |
-| **11 Lines** | *Skipped (Geometry rule - impossible on 5x5 grid)* |
-| **12 Lines (Full House)** | **Ultra Jackpot (500x Bet)** |
+| Completed Slingos | Awarded Ladder Prize | Description / Effect |
+| :---: | :--- | :--- |
+| **0 Lines** | No ladder prize | No additional prize |
+| **1 Line** | **Mini Strike 1** | Adds +1.0x to 4 orthogonal neighbors |
+| **2 Lines** | **Mini Vortex** | Base 1.0x + gathers 4 orthogonal neighbors |
+| **3 Lines** | **Mini Jackpot** | Awards fixed **5x Bet** |
+| **4 Lines** | **Mega Vortex** | Base 2.0x + gathers all line-sharing coins |
+| **5 Lines** | **Mega Strike 2** | Adds +2.0x to all line-sharing coins |
+| **6 Lines** | **Multiplier x2** | Multiplies all non-jackpot locked coins by 2x |
+| **7 Lines** | **Ultra Vortex** | Base 5.0x + gathers all coins across entire board |
+| **8 Lines** | **Multiplier x3** | Multiplies all non-jackpot locked coins by 3x |
+| **9 Lines** | **Mega Jackpot** | Awards fixed **50x Bet** |
+| **10 Lines** | **Ultra Strike 5** | Adds +5.0x to all coins across entire board |
+| **11 Lines** | *Skipped* | *(Geometry rule - mathematically impossible on 5x5 grid)* |
+| **12 Lines (Full House)** | **Ultra Jackpot** | Awards fixed **500x Bet** |
 
 ---
 
